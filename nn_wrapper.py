@@ -2,22 +2,20 @@ import torch
 from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-import seaborn as sns
-from matplotlib import pyplot as plt
-from sklearn.metrics import confusion_matrix
 
 
 EPOCHS = 8
 
 def run_model(ds_name: str) -> float:
     if ds_name == "MNIST":
-        dataset = datasets.MNIST()
+        train_ds = datasets.MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
+        test_ds = datasets.MNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)
     elif ds_name == "CIFAR 10":
-        dataset = datasets.CIFAR10()
+        train_ds = datasets.CIFAR10(root='./data', train=True, transform=transforms.ToTensor(), download=True)
+        test_ds = datasets.CIFAR10(root='./data', train=False, transform=transforms.ToTensor(), download=True)
     elif ds_name == "CIFAR 100":
-        dataset = datasets.CIFAR100()
-    train_ds = dataset(root='./data', train=True, transform=transforms.ToTensor(), download=True)
-    test_ds = dataset(root='./data', train=False, transform=transforms.ToTensor(), download=True)
+        train_ds = datasets.CIFAR100(root='./data', train=True, transform=transforms.ToTensor(), download=True)
+        test_ds = datasets.CIFAR100(root='./data', train=False, transform=transforms.ToTensor(), download=True)
     print("Train set size:", train_ds.data.shape) # Send this info to the user terminal
     print("Test set size:", test_ds.data.shape)
     train_loader = DataLoader(
