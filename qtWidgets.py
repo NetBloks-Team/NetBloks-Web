@@ -375,7 +375,7 @@ class CodeBlock(QWidget):
         # Set the layout for the widget
         self.setLayout(self.layout)
     
-    def set_save(self, save):
+    def set_saver(self, save):
         self.save = save
 
     def setValues(self, values):
