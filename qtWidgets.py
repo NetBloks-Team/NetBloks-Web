@@ -1,6 +1,5 @@
 import json
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit, QSizePolicy
-from PyQt6.QtWidgets import QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit, QScrollArea, QHBoxLayout
 from PyQt6.QtWidgets import QLabel, QFrame
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
@@ -126,11 +125,9 @@ class WorkspaceSelecter(QWidget):
         
         if os.path.exists(file_path):
             try:
-                print(f"Deleting {file_path}")
                 os.remove(file_path)
             except Exception as e:
                 print(f"Failed to delete {file_path}: {e}")
-            print(os.path.exists(file_path))
 
     def rename_workspace(self):
         current_index = self.dropdown.currentIndex()
@@ -199,14 +196,16 @@ class CodeEditor(QWidget):
         self.layout.addLayout(self.menu_layout)
         
         # Create a scroll area for the code blocks
-        self.scroll_area = QWidget()
-        self.scroll_area_layout = QVBoxLayout()
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)  # Enable resizing of the scroll area content
+
+        self.scroll_area_content = QWidget()
+        self.scroll_area_layout = QVBoxLayout(self.scroll_area_content)
         self.scroll_area_layout.setSpacing(10)  # Add spacing between blocks
         self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
         self.scroll_area_layout.setAlignment(Qt.AlignmentFlag.AlignTop)  # Stack blocks at the top
 
-        self.scroll_area.setLayout(self.scroll_area_layout)
-        self.scroll_area.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        self.scroll_area.setWidget(self.scroll_area_content)
 
         self.scroll_area_container = QVBoxLayout()
         self.scroll_area_container.setAlignment(Qt.AlignmentFlag.AlignTop)  # Align scroll area to the top
