@@ -2,6 +2,7 @@ import os
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QScrollArea, QHBoxLayout
 import qtWidgets
 import gemini_gen
+from nn_wrapper import run_model
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -50,8 +51,8 @@ class MainWindow(QMainWindow):
         
         # Get the code from the code editor
         code = self.code_editor.get_json_data()
-        dataset = self.code_editor.get_dataset()
+        ds_name = self.code_editor.get_dataset()
         
         # Run the code in the selected workspace
-        gemini_gen.gemini_gen(dataset, code)
-        os.system(f"python3 nn_wrapper.py")
+        gemini_gen.gemini_gen(ds_name, code)
+        run_model(ds_name)
