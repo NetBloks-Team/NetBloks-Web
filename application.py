@@ -54,4 +54,4 @@ class MainWindow(QMainWindow):
         
         # Run the code in the selected workspace
         gemini_gen.gemini_gen(ds_name, code)
-        run_model(ds_name=)
+        run_model(ds_name)
