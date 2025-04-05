@@ -1,0 +1,8 @@
+{
+    "layer-1": {"type":"conv2d", "filters": 32, "kernel_size": 3, "activation": "relu"},
+    "layer-2": {"type":"conv2d", "filters": 64, "kernel_size": 3, "activation": "relu"},
+    "layer-3": {"type":"maxpool2d", "pool_size": 2},
+    "layer-4": {"type":"flatten"},
+    "layer-5": {"type":"dense", "units": 128, "activation": "relu"},
+    "layer-6": {"type":"dropout", "rate": 0.5}
+}
