@@ -10,7 +10,7 @@ Python version: 3.13
 import os
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog
 from PyQt6.QtWidgets import QHBoxLayout
-import qtWidgets
+import application
 from gemini_gen import gemini_gen
 
 #-----Function Section-----
@@ -21,7 +21,7 @@ def main():
     """
     ds_name = "MNIST"
     with open("llm_output.py", "w", encoding="utf-8") as f:
-        f.write(gemini_gen(ds_name))
+        f.write(gemini_gen())
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
 
 def qt_main():
     app = QApplication([])
-    window = MainWindow()
+    window = application.MainWindow()
     window.show()
     app.exec()    
 

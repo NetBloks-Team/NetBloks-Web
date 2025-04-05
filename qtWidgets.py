@@ -1,8 +1,10 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit
+from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit, QSizePolicy
 from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QLabel, QFrame
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
+
+datasets = ["MNIST", "CIFAR 10", "CIFAR 100", "IMDB"]
 
 layers_and_parameters = {
     "Conv2d": ["kernel_size", "stride", "padding"],
@@ -62,7 +64,7 @@ class WorkspaceSelecter(QWidget):
         self.rename_button.clicked.connect(self.rename_workspace)
 
         # Set up the layout
-        self.layout = QVBoxLayout()
+        self.layout = QHBoxLayout()
         self.layout.addWidget(self.dropdown)
 
         self.button_layout = QHBoxLayout()
@@ -105,25 +107,45 @@ class CodeEditor(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
-
-        # self.setStyleSheet("background-color: #222222;")  # Dark background for the editor
-
+        self.workspace = None
         # Create a menu for adding and deleting code blocks
         self.menu_layout = QHBoxLayout()
         self.add_block_button = QPushButton("Add Code Block")
         self.add_block_button.clicked.connect(self.add_code_block)
         self.delete_block_button = QPushButton("Delete Code Block")
         self.delete_block_button.clicked.connect(self.delete_code_block)
+        # Create a dropdown for selecting datasets
+        self.dataset_dropdown = QComboBox()
+        self.dataset_dropdown.addItems(datasets)
+        self.menu_layout.addWidget(self.dataset_dropdown)
+
+        self.print_button = QPushButton("Print JSON")
+        self.print_button.clicked.connect(lambda: print(self.get_json_data()))
 
         self.menu_layout.addWidget(self.add_block_button)
         self.menu_layout.addWidget(self.delete_block_button)
+        self.menu_layout.addWidget(self.print_button)
         self.layout.addLayout(self.menu_layout)
+        
+        # Create a scroll area for the code blocks
+        self.scroll_area = QWidget()
+        self.scroll_area_layout = QVBoxLayout()
+        self.scroll_area_layout.setSpacing(10)  # Add spacing between blocks
+        self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
+        self.scroll_area_layout.setAlignment(Qt.AlignmentFlag.AlignTop)  # Stack blocks at the top
 
-        # Create a container for code blocks
-        self.blocks_container = QVBoxLayout()
-        self.layout.addLayout(self.blocks_container)
+        self.scroll_area.setLayout(self.scroll_area_layout)
+        self.scroll_area.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
 
-        self.setLayout(self.layout)
+        self.scroll_area_container = QVBoxLayout()
+        self.scroll_area_container.setAlignment(Qt.AlignmentFlag.AlignTop)  # Align scroll area to the top
+        self.scroll_area_container.addWidget(self.scroll_area)
+        self.layout.addLayout(self.scroll_area_container)
+
+        # Initialize blocks_container
+        self.blocks_container = self.scroll_area_layout
+
+        self.setLayout(self.layout)        
 
     def add_code_block(self):
         # Prompt the user to select a block type
@@ -143,6 +165,18 @@ class CodeEditor(QWidget):
             self.blocks_container.removeWidget(last_block)
             last_block.deleteLater()
 
+    def get_json_data(self):
+        # Collect JSON data from all code blocks
+        json_data = []
+        for i in range(self.blocks_container.count()):
+            block = self.blocks_container.itemAt(i).widget()
+            if block:
+                json_data.append(block.json_data)
+        return json_data
+
+    def get_dataset(self):
+        return self.dataset_dropdown.currentText()
+
 class CodeBlock(QWidget):
     def __init__(self, type, parameters=[]):
         super().__init__()
@@ -161,7 +195,26 @@ class CodeBlock(QWidget):
         self.layout.setContentsMargins(10, 10, 10, 10)  # Add padding inside the box
 
         # Add a label at the top with the type
+        top_bar = QWidget()
+        top_bar_layout = QHBoxLayout()
+        top_bar_layout.setContentsMargins(0, 0, 0, 0)
+
         self.type_label = QLabel(self.type)
+        self.type_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        font = self.type_label.font()
+        font.setPointSize(12)  # Increase the font size
+        self.type_label.setFont(font)
+
+        delete_button = QPushButton("X")
+        delete_button.setFixedSize(20, 20)
+        delete_button.clicked.connect(self.deleteLater)
+
+        top_bar_layout.addWidget(self.type_label)
+        top_bar_layout.addStretch()
+        top_bar_layout.addWidget(delete_button)
+
+        top_bar.setLayout(top_bar_layout)
+        self.layout.addWidget(top_bar)
         self.type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(self.type_label)
 
@@ -193,6 +246,13 @@ class CodeBlock(QWidget):
 
         # Set the layout for the widget
         self.setLayout(self.layout)
+
+    def setValues(self, values):
+        # Set the values for each parameter
+        self.json_data.update(values)
+        for i, param in enumerate(self.parameters):
+            if i < len(values):
+                self.inputs[i].setText(str(values[param]))
 
     def on_value_change(self, param, value):
         # Update the JSON data with the new value
