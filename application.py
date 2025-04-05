@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog
 from PyQt6.QtWidgets import QHBoxLayout
 import qtWidgets
+import gemini_gen
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -14,10 +15,34 @@ class MainWindow(QMainWindow):
         # Create a layout and add the widgets
         layout = QVBoxLayout()
         layout.setAlignment(qtWidgets.Qt.AlignmentFlag.AlignTop)
-        layout.addWidget(self.workspace_selector)  # Workspace selector at the top
+        # layout.addWidget(self.workspace_selector)  # Workspace selector at the top
+        # Add a horizontal layout to consolidate the workspace selector in the left corner
+        h_layout_left = QHBoxLayout()
+        self.run_button = QPushButton("Run")
+        
+        h_layout_left.setAlignment(qtWidgets.Qt.AlignmentFlag.AlignLeft)
+        h_layout_left.addWidget(self.workspace_selector)
+
+        h_layout_right = QHBoxLayout()
+        h_layout_right.setAlignment(qtWidgets.Qt.AlignmentFlag.AlignRight)
+        h_layout_right.addWidget(self.run_button, alignment=qtWidgets.Qt.AlignmentFlag.AlignRight)
+        h_layout = QHBoxLayout()
+        h_layout.addLayout(h_layout_left)
+        h_layout.addLayout(h_layout_right)
+        layout.addLayout(h_layout)
         layout.addWidget(self.code_editor)        # Code editor below
         
         # Set the layout to a container widget
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
+
+    def on_run(self):
+        # Get the selected workspace
+        
+        # Get the code from the code editor
+        code = self.code_editor.get_json_data()
+        dataset = self.code_editor.get_dataset()
+        
+        # Run the code in the selected workspace
+        gemini_gen.gemini_gen(dataset, code)
