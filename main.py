@@ -41,7 +41,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Workspace Selector")
         
         # Create a combo box as a placeholder for qtWidgets.WorkspaceSelecter
-        self.test_widget = qtWidgets.WorkspaceSelecter() #CodeBlock("Conv2d", ["kernel", "Stride", "Padding"])
+        self.test_widget = qtWidgets.CodeEditor() #CodeBlock("Conv2d", ["kernel", "Stride", "Padding"])
         self.test_widget.setGeometry(0, 0, 200, 100)
         # self.workspace_selector.addItems(["Workspace 1", "Workspace 2", "Workspace 3"])
         
@@ -60,4 +60,4 @@ def qt_main():
     app.exec()    
 
 if __name__ == "__main__":
-    main()
+    qt_main()
