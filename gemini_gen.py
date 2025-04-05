@@ -33,3 +33,22 @@ def gemini_gen(ds_name: str, nn_struct: str) -> str:
     )
     output = response.text.strip("```").removeprefix("python\n")
     return output
+
+def gemini_fb(ds_name: str, nn_struct: str) -> str:
+    """
+    Method for generating a feedback on a user's neural network
+
+    returns: str
+    A string containing feedback
+    """
+    #print("You are using API key:", os.environ["GEMINI_KEY"])
+    #Make sure to put your Gemini API key in the environment variables
+    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    full_prompt = ""
+    full_prompt += "Please generate python code for a pytorch neural network that has the following parameters:\n"
+    full_prompt += nn_struct
+    full_prompt += f"\nWe are training the network on the {ds_name} dataset"
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
+    )
+    return response.text
