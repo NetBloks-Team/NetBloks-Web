@@ -172,6 +172,7 @@ class WorkspaceSelecter(QWidget):
 class CodeEditor(QWidget):
     def __init__(self):
         super().__init__()
+        self.save = None
         self.layout = QVBoxLayout()
         # Create a menu for adding and deleting code blocks
         self.menu_layout = QHBoxLayout()
@@ -215,7 +216,14 @@ class CodeEditor(QWidget):
         # Initialize blocks_container
         self.blocks_container = self.scroll_area_layout
 
-        self.setLayout(self.layout)        
+        self.setLayout(self.layout)     
+
+    def set_saver(self, save):
+        self.save = save
+        for i in range(self.blocks_container.count()):
+            block = self.blocks_container.itemAt(i).widget()
+            if block:
+                block.set_saver(save)
 
     def add_code_block(self):
         # Prompt the user to select a block type
@@ -227,6 +235,9 @@ class CodeEditor(QWidget):
             parameters = layers[block_type]
             new_block = CodeBlock(block_type, parameters)
             self.blocks_container.addWidget(new_block)
+        
+        if self.save:
+            self.save()
 
     def add_activation(self):
         block_type, ok = QInputDialog.getItem(
@@ -237,6 +248,9 @@ class CodeEditor(QWidget):
             parameters = activations[block_type]
             new_block = CodeBlock(block_type, parameters)
             self.blocks_container.addWidget(new_block)
+        
+        if self.save:
+            self.save()
 
     def get_json_data(self):
         # Collect JSON data from all code blocks
@@ -275,7 +289,7 @@ class CodeEditor(QWidget):
         for block_data in data["blocks"]:
             block_type = block_data["type"]
             parameters = layers.get(block_type, [])
-            new_block = CodeBlock(block_type, parameters)
+            new_block = CodeBlock(block_type, parameters, self.save)
             new_block.setValues(block_data)
             self.blocks_container.addWidget(new_block)
     
@@ -287,9 +301,13 @@ class CodeEditor(QWidget):
                 widget.deleteLater()
         self.dataset_dropdown.setCurrentIndex(0)
 
+        if self.save:
+            self.save()
+
 class CodeBlock(QWidget):
-    def __init__(self, type, parameters=[]):
+    def __init__(self, type, parameters=[], save=None):
         super().__init__()
+        self.save = save
         self.json_data = {
             "type": type,
             **{param: "" for param in parameters}
@@ -356,6 +374,9 @@ class CodeBlock(QWidget):
 
         # Set the layout for the widget
         self.setLayout(self.layout)
+    
+    def set_save(self, save):
+        self.save = save
 
     def setValues(self, values):
         # Set the values for each parameter
@@ -368,6 +389,8 @@ class CodeBlock(QWidget):
         # Update the JSON data with the new value
         self.json_data[param] = value
         print(f"Updated {param} to {value}")
+        if self.save:
+            self.save()
     
     def paintEvent(self, event):
             painter = QPainter(self)
@@ -375,3 +398,22 @@ class CodeBlock(QWidget):
             painter.setBrush(Qt.GlobalColor.darkGray)
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(self.rect(), 10, 10)
+
+class Console(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.setWindowTitle("Console")
+        title_label = QLabel("Console Output")
+        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = title_label.font()
+        font.setPointSize(16)
+        title_label.setFont(font)
+        self.layout.addWidget(title_label)
+        self.console_output = QLabel()
+
+
+    def add_output(self, text):
+        self.console_output.setText(self.console_output.text() + "\n" + text)
+        self.layout.addWidget(self.console_output)

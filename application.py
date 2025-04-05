@@ -15,7 +15,7 @@ class MainWindow(QMainWindow):
         # Create the workspace selector and code editor
         self.code_editor = qtWidgets.CodeEditor()
         self.workspace_selector = qtWidgets.WorkspaceSelecter(None, self.code_editor.get_savable, self.code_editor.from_savable, self.code_editor.clear)
-        
+        self.code_editor.set_saver(self.workspace_selector.save)
         # Create a layout and add the widgets
         layout = QVBoxLayout()
         layout.setAlignment(qtWidgets.Qt.AlignmentFlag.AlignTop)
