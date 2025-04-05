@@ -21,7 +21,6 @@ def main():
     """
     with open("llm_output.py", "w", encoding="utf-8") as f:
         f.write(gemini_gen())
-    os.system("python llm_output.py")
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -49,3 +48,4 @@ def qt_main():
 
 if __name__ == "__main__":
     qt_main()
+    main()
