@@ -1,7 +1,3 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog
-from PyQt6.QtWidgets import QHBoxLayout
-import qtWidgets
-
 """
 An AI project for the UNR ACM 2025 Hackathon
 
@@ -12,7 +8,9 @@ Python version: 3.13
 #-----Import Section-----
 
 import os
-from google import genai
+from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog
+from PyQt6.QtWidgets import QHBoxLayout
+import qtWidgets
 from gemini_gen import gemini_gen
 
 #-----Function Section-----

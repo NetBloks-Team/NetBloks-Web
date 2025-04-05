@@ -21,7 +21,7 @@ def gemini_gen() -> str:
     client = genai.Client(api_key=os.environ["GEMINI_KEY"])
     with open("nn.json", "r", encoding="utf-8") as f:
         prompt = f.read()
-    full_prompt = "Please generate python code for a pytorch neural network that has the following parameters:\n" + prompt +"\nOnly give code, and do not reply with anything else. Give the code as an entire file that can be executed."
+    full_prompt = "Please generate python code for a pytorch neural network that has the following parameters:\n" + prompt +"\nOnly give code, and do not reply with anything else. Give the code as an entire file that can be executed. The neural network class is named 'Net'"
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
