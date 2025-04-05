@@ -12,7 +12,7 @@ from google import genai
 
 #-----Function Section-----
 
-def gemini_gen(ds_name: str) -> str:
+def gemini_gen(ds_name: str, nn_struct: str) -> str:
     """
     Method for generating a neural network from a prompt
 
@@ -22,11 +22,9 @@ def gemini_gen(ds_name: str) -> str:
     #print("You are using API key:", os.environ["GEMINI_KEY"])
     #Make sure to put your Gemini API key in the environment variables
     client = genai.Client(api_key=os.environ["GEMINI_KEY"])
-    with open("nn.json", "r", encoding="utf-8") as f:
-        prompt = f.read()
     full_prompt = ""
     full_prompt += "Please generate python code for a pytorch neural network that has the following parameters:\n"
-    full_prompt += prompt
+    full_prompt += nn_struct
     full_prompt += "\nOnly give code, and do not reply with anything else. Give the code as an entire file that can be executed."
     full_prompt += "The neural network class is named 'Net'"
     full_prompt += f"We are training the network on the {ds_name} dataset"
