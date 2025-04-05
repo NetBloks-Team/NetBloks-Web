@@ -16,16 +16,6 @@ from gemini_gen import gemini_gen
 
 #-----Function Section-----
 
-def main():
-    """
-    docstring thing goes here
-    """
-    ds_name = "MNIST"
-    with open("llm_output.py", "w", encoding="utf-8") as f:
-        f.write(gemini_gen(ds_name))
-
-    os.system(f"python3 nn_wrapper.py")
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -44,12 +34,12 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         
 
-def qt_main():
+def main():
     app = QApplication([])
     window = application.MainWindow()
     window.show()
     app.exec()    
 
 if __name__ == "__main__":
-    qt_main()
+    main()
     # main()
