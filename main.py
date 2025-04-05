@@ -7,12 +7,9 @@ Python version: 3.13
 
 #-----Import Section-----
 
-import os
 import qtWidgets
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog
-from PyQt6.QtWidgets import QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QScrollArea, QHBoxLayout
 import application
-from gemini_gen import gemini_gen
 
 #-----Function Section-----
 
