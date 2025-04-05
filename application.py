@@ -45,4 +45,4 @@ class MainWindow(QMainWindow):
         dataset = self.code_editor.get_dataset()
         
         # Run the code in the selected workspace
-        gemini_gen.gemini_gen(dataset, code)
+        print(gemini_gen.gemini_gen(dataset, code))

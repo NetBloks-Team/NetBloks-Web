@@ -6,25 +6,13 @@ from PyQt6.QtGui import QPainter
 
 datasets = ["MNIST", "CIFAR 10", "CIFAR 100", "IMDB"]
 
-layers_and_parameters = {
-    "Conv2d": ["kernel_size", "stride", "padding"],
+layers = {
+    "Conv2d": ["channels","kernel_size", "stride"],
     "Linear": ["in_features", "out_features"],
-    "ReLU": [],
-    "MaxPool2d": ["kernel_size", "stride", "padding"],
+    "MaxPool2d": ["kernel_size", "stride"],
     "Dropout": ["p"],
     "BatchNorm2d": ["num_features"],
     "Flatten": [],
-    "Sigmoid": [],
-    "Tanh": [],
-    "Softmax": [],
-    "LogSoftmax": [],
-    "LeakyReLU": ["negative_slope"],
-    "ELU": ["alpha"],
-    "SELU": [],
-    "PReLU": ["num_parameters"],
-    "Softplus": ["beta"],
-    "Softshrink": ["lambd"],
-    "Threshold": ["threshold", "value"],
     "AdaptiveAvgPool2d": ["output_size"],
     "AdaptiveMaxPool2d": ["output_size"],
     "Upsample": ["size", "scale_factor", "mode"],
@@ -40,7 +28,23 @@ layers_and_parameters = {
     "TransformerEncoder": ["encoder_layer", "num_layers"],
     "TransformerDecoder": ["decoder_layer", "num_layers"],
     "TransformerEncoderLayer": ["d_model", "nhead", "dim_feedforward"],
-    "TransformerDecoderLayer": ["d_model", "nhead", "dim_feedforward"],}
+    "TransformerDecoderLayer": ["d_model", "nhead", "dim_feedforward"],
+}
+
+activations = {
+    "ReLU": [],
+    "Sigmoid": [],
+    "Tanh": [],
+    "Softmax": [],
+    "LogSoftmax": [],
+    "LeakyReLU": ["negative_slope"],
+    "ELU": ["alpha"],
+    "SELU": [],
+    "PReLU": ["num_parameters"],
+    "Softplus": ["beta"],
+    "Softshrink": ["lambd"],
+    "Threshold": ["threshold", "value"],
+}
 
 class WorkspaceSelecter(QWidget): 
     def __init__(self, workspaces=None):
@@ -110,10 +114,10 @@ class CodeEditor(QWidget):
         self.workspace = None
         # Create a menu for adding and deleting code blocks
         self.menu_layout = QHBoxLayout()
-        self.add_block_button = QPushButton("Add Code Block")
+        self.add_block_button = QPushButton("Add Layer Block")
         self.add_block_button.clicked.connect(self.add_code_block)
-        self.delete_block_button = QPushButton("Delete Code Block")
-        self.delete_block_button.clicked.connect(self.delete_code_block)
+        self.add_activation_button = QPushButton("Add Activation Block")
+        self.add_activation_button.clicked.connect(self.add_activation)
         # Create a dropdown for selecting datasets
         self.dataset_dropdown = QComboBox()
         self.dataset_dropdown.addItems(datasets)
@@ -123,7 +127,7 @@ class CodeEditor(QWidget):
         self.print_button.clicked.connect(lambda: print(self.get_json_data()))
 
         self.menu_layout.addWidget(self.add_block_button)
-        self.menu_layout.addWidget(self.delete_block_button)
+        self.menu_layout.addWidget(self.add_activation_button)
         self.menu_layout.addWidget(self.print_button)
         self.layout.addLayout(self.menu_layout)
         
@@ -150,20 +154,23 @@ class CodeEditor(QWidget):
     def add_code_block(self):
         # Prompt the user to select a block type
         block_type, ok = QInputDialog.getItem(
-            self, "Select Code Block Type", "Block Type:", layers_and_parameters.keys(), 0, False
+            self, "Select Code Block Type", "Block Type:", layers.keys(), 0, False
         )
         if ok and block_type:
             # Create a new CodeBlock and add it to the container
-            parameters = layers_and_parameters[block_type]
+            parameters = layers[block_type]
             new_block = CodeBlock(block_type, parameters)
             self.blocks_container.addWidget(new_block)
 
-    def delete_code_block(self):
-        # Remove the last added code block, if any
-        if self.blocks_container.count() > 0:
-            last_block = self.blocks_container.itemAt(self.blocks_container.count() - 1).widget()
-            self.blocks_container.removeWidget(last_block)
-            last_block.deleteLater()
+    def add_activation(self):
+        block_type, ok = QInputDialog.getItem(
+            self, "Select Code Block Type", "Block Type:", activations.keys(), 0, False
+        )
+        if ok and block_type:
+            # Create a new CodeBlock and add it to the container
+            parameters = activations[block_type]
+            new_block = CodeBlock(block_type, parameters)
+            self.blocks_container.addWidget(new_block)
 
     def get_json_data(self):
         # Collect JSON data from all code blocks
