@@ -20,6 +20,7 @@ class MainWindow(QMainWindow):
         # Add a horizontal layout to consolidate the workspace selector in the left corner
         h_layout_left = QHBoxLayout()
         self.run_button = QPushButton("Run")
+        self.run_button.clicked.connect(self.on_run)
         
         h_layout_left.setAlignment(qtWidgets.Qt.AlignmentFlag.AlignLeft)
         h_layout_left.addWidget(self.workspace_selector)
