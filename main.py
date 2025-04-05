@@ -19,8 +19,9 @@ def main():
     """
     docstring thing goes here
     """
+    ds_name = "MNIST"
     with open("llm_output.py", "w", encoding="utf-8") as f:
-        f.write(gemini_gen())
+        f.write(gemini_gen(ds_name))
 
 class MainWindow(QMainWindow):
     def __init__(self):

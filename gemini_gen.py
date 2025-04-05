@@ -12,16 +12,18 @@ from google import genai
 
 #-----Function Section-----
 
-def gemini_gen() -> str:
+def gemini_gen(ds_name: str) -> str:
     """
     Method for generating a neural network from a prompt
+
+    returns: str
+    An entire python script that hopefully works
     """
     #print("You are using API key:", os.environ["GEMINI_KEY"])
     #Make sure to put your Gemini API key in the environment variables
     client = genai.Client(api_key=os.environ["GEMINI_KEY"])
     with open("nn.json", "r", encoding="utf-8") as f:
         prompt = f.read()
-    ds_name = "MNIST"
     full_prompt = ""
     full_prompt += "Please generate python code for a pytorch neural network that has the following parameters:\n"
     full_prompt += prompt

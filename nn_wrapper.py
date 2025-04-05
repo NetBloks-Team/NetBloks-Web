@@ -2,6 +2,9 @@ import torch
 from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+import seaborn as sns
+from matplotlib import pyplot as plt
+from sklearn.metrics import confusion_matrix
 from llm_output import Net
 
 EPOCHS = 8
@@ -42,7 +45,13 @@ for i in range(EPOCHS):
 print("Done with ANN fitting.")
 
 X_test = torch.reshape(test_ds.data.float(), (-1, 1, 28, 28))
-y_test = test_ds.test_labels
+y_test = test_ds.targets
 print(X_test.shape)
 with torch.no_grad():
     y_pred = net.forward(X_test)
+
+confusion_mtx = confusion_matrix(y_test, y_pred)
+hmap = sns.heatmap(
+   confusion_mtx, annot=True, fmt="g"
+)  # Create the data visualization
+plt.show()
