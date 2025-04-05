@@ -27,7 +27,8 @@ def gemini_gen(ds_name: str, nn_struct: str) -> str:
     full_prompt += nn_struct
     full_prompt += "\nOnly give code, and do not reply with anything else. Give the code as an entire file that can be executed."
     full_prompt += "The neural network class is named 'Net'"
-    full_prompt += f"We are training the network on the {ds_name} dataset"
+    full_prompt += f"We are training the network on the {ds_name} dataset."
+    full_prompt += "Make sure the input size is correct for the dataset. (i.e. 1 channel for B/W images like MNIST, 3 channels for RGB images like CIFAR 10)"
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )

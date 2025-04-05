@@ -2,6 +2,7 @@ import torch
 from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+from llm_output import Net
 
 
 EPOCHS = 8
@@ -25,7 +26,6 @@ def run_model(ds_name: str) -> float:
         test_ds, batch_size=64, shuffle=False, drop_last=True
     )
 
-    from llm_output import Net
     net = Net()
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=0.01)
