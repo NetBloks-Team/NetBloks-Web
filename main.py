@@ -1,3 +1,7 @@
+from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog
+from PyQt6.QtWidgets import QHBoxLayout
+import qtWidgets
+
 """
 An AI project for the UNR ACM 2025 Hackathon
 
@@ -20,6 +24,30 @@ def main():
     with open("llm_output.py", "w", encoding="utf-8") as f:
         f.write(gemini_gen())
     os.system("python llm_output.py")
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Workspace Selector")
+        
+        # Create a combo box as a placeholder for qtWidgets.WorkspaceSelecter
+        self.test_widget = qtWidgets.WorkspaceSelecter() #CodeBlock("Conv2d", ["kernel", "Stride", "Padding"])
+        self.test_widget.setGeometry(0, 0, 200, 100)
+        # self.workspace_selector.addItems(["Workspace 1", "Workspace 2", "Workspace 3"])
+        
+        # Set up the central widget and layout
+        central_widget = QWidget()
+        layout = QVBoxLayout()
+        layout.addWidget(self.test_widget)
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+        
+
+def qt_main():
+    app = QApplication([])
+    window = MainWindow()
+    window.show()
+    app.exec()    
 
 if __name__ == "__main__":
     main()
