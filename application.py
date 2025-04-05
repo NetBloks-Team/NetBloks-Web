@@ -1,3 +1,4 @@
+import os
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog
 from PyQt6.QtWidgets import QHBoxLayout
 import qtWidgets
@@ -45,4 +46,5 @@ class MainWindow(QMainWindow):
         dataset = self.code_editor.get_dataset()
         
         # Run the code in the selected workspace
-        print(gemini_gen.gemini_gen(dataset, code))
+        gemini_gen.gemini_gen(dataset, code)
+        os.system(f"python3 nn_wrapper.py")
