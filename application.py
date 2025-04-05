@@ -1,5 +1,5 @@
 import os
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QScrollArea
 from PyQt6.QtWidgets import QHBoxLayout
 import qtWidgets
 import gemini_gen
@@ -10,8 +10,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("AI Project")
         
         # Create the workspace selector and code editor
-        self.workspace_selector = qtWidgets.WorkspaceSelecter()
         self.code_editor = qtWidgets.CodeEditor()
+        self.workspace_selector = qtWidgets.WorkspaceSelecter(None, self.code_editor.get_savable, self.code_editor.from_savable, self.code_editor.clear)
         
         # Create a layout and add the widgets
         layout = QVBoxLayout()
@@ -32,7 +32,11 @@ class MainWindow(QMainWindow):
         h_layout.addLayout(h_layout_left)
         h_layout.addLayout(h_layout_right)
         layout.addLayout(h_layout)
-        layout.addWidget(self.code_editor)        # Code editor below
+        # Add the code editor with scroll functionality
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(self.code_editor)
+        layout.addWidget(scroll_area)
         
         # Set the layout to a container widget
         container = QWidget()

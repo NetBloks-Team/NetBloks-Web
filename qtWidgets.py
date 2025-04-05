@@ -1,8 +1,10 @@
+import json
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit, QSizePolicy
 from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QLabel, QFrame
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
+import os
 
 datasets = ["MNIST", "CIFAR 10", "CIFAR 100", "IMDB"]
 
@@ -47,15 +49,29 @@ activations = {
 }
 
 class WorkspaceSelecter(QWidget): 
-    def __init__(self, workspaces=None):
+    def __init__(self, workspaces=None, get_savable=None, from_savable=None, clear=None):
         super().__init__()
+        self.get_savable = get_savable
+        self.from_savable = from_savable
+        self.clear_editor = clear
+        self.previous_workspace = None
+
         # Create a dropdown (QComboBox)
         self.dropdown = QComboBox()
         if workspaces is not None:
+            self.previous_workspace = workspaces[0]
             self.dropdown.addItems(workspaces)
+        elif self.get_file_paths():
+            self.previous_workspace = self.get_file_paths()[0].strip(".json")
+            self.dropdown.addItems([file.strip(".json") for file in self.get_file_paths()])
+            with open(f"saves/{self.previous_workspace}.json", "r") as f:
+                data = json.loads(f.read())
+                self.from_savable(data)
         else:
+            self.previous_workspace = "Workspace 1"
             self.dropdown.addItems(["Workspace 1"])
         self.dropdown.currentIndexChanged.connect(self.on_workspace_change)
+        
 
         # Create buttons for adding, deleting, and renaming workspaces
         self.add_button = QPushButton("Add")
@@ -86,16 +102,36 @@ class WorkspaceSelecter(QWidget):
         self.layout.setSpacing(0)
         self.setLayout(self.layout)
 
+    def get_file_paths(self):
+        # Get the file paths of all workspaces
+        if not os.path.exists("saves"):
+            return []
+        return [f for f in os.listdir("saves") if os.path.isfile(os.path.join("saves", f))]
+
 
     def add_workspace(self):
+        self.clear_editor()
         new_workspace_name = f"Workspace {self.dropdown.count() + 1}"
+        while new_workspace_name in [self.dropdown.itemText(i) for i in range(self.dropdown.count())]:
+            new_workspace_name = f"Workspace {self.dropdown.count() + 2}"
         self.dropdown.addItem(new_workspace_name)
         self.dropdown.setCurrentIndex(self.dropdown.count() - 1)
+        self.on_workspace_change(self.dropdown.count() - 1)
 
     def delete_workspace(self):
         current_index = self.dropdown.currentIndex()
+        file_path = f"saves/{self.dropdown.itemText(current_index)}.json"
         if current_index != -1:
             self.dropdown.removeItem(current_index)
+            file_path = f"saves/{self.dropdown.itemText(current_index)}.json"
+        
+        if os.path.exists(file_path):
+            try:
+                print(f"Deleting {file_path}")
+                os.remove(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}: {e}")
+            print(os.path.exists(file_path))
 
     def rename_workspace(self):
         current_index = self.dropdown.currentIndex()
@@ -103,21 +139,52 @@ class WorkspaceSelecter(QWidget):
             new_name, ok = QInputDialog.getText(self, "Rename Workspace", "Enter new name:")
             if ok and new_name.strip():
                 self.dropdown.setItemText(current_index, new_name.strip())
+    
+    def set_saves(self, get_savable, from_savable, clear):
+        self.get_savable = get_savable
+        self.from_savable = from_savable
+        self.clear_editor = clear
+    
+    def save(self, name=None):
+        if self.get_savable is not None:
+            data = self.get_savable()
+            print(data)
+            # Save the data to a file or database
+            if not name:
+                name = self.dropdown.currentText()
+            
+            os.makedirs("saves", exist_ok=True)
+            with open(f"saves/{name}.json", "w") as f:
+                json.dump(data, f)
 
     def on_workspace_change(self, index):
-        print(f"Selected Workspace: {self.dropdown.itemText(index)}")
-
+        print(f"Workspace changed to: {self.dropdown.itemText(index)}")
+        if self.previous_workspace in [self.dropdown.itemText(i) for i in range(self.dropdown.count())]:
+            self.save(self.previous_workspace)
+        if self.from_savable is not None:
+            # Load the data from a file or database
+            name = self.dropdown.itemText(index)
+            try:
+                with open(f"saves/{name}.json", "r") as f:
+                    data = json.load(f)
+                self.from_savable(data)
+            except FileNotFoundError:
+                self.clear_editor()
+        self.previous_workspace = self.dropdown.currentText()
+            
+        
 class CodeEditor(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
-        self.workspace = None
         # Create a menu for adding and deleting code blocks
         self.menu_layout = QHBoxLayout()
         self.add_block_button = QPushButton("Add Layer Block")
         self.add_block_button.clicked.connect(self.add_code_block)
         self.add_activation_button = QPushButton("Add Activation Block")
         self.add_activation_button.clicked.connect(self.add_activation)
+        self.clear_button = QPushButton("Clear")
+        self.clear_button.clicked.connect(self.clear)
         # Create a dropdown for selecting datasets
         self.dataset_dropdown = QComboBox()
         self.dataset_dropdown.addItems(datasets)
@@ -129,6 +196,7 @@ class CodeEditor(QWidget):
         self.menu_layout.addWidget(self.add_block_button)
         self.menu_layout.addWidget(self.add_activation_button)
         self.menu_layout.addWidget(self.print_button)
+        self.menu_layout.addWidget(self.clear_button)
         self.layout.addLayout(self.menu_layout)
         
         # Create a scroll area for the code blocks
@@ -183,6 +251,43 @@ class CodeEditor(QWidget):
 
     def get_dataset(self):
         return self.dataset_dropdown.currentText()
+    
+    def get_savable(self):
+        # Get the JSON data from all code blocks
+        json_data = self.get_json_data()
+        # Get the selected dataset
+        dataset = self.dataset_dropdown.currentText()
+        # Create a dictionary to hold the data
+        data = {
+            "dataset": dataset,
+            "blocks": json_data
+        }
+        return data
+    
+    def from_savable(self, data):
+        self.clear()
+        # Set the dataset
+        self.dataset_dropdown.setCurrentText(data["dataset"])
+        # Clear existing blocks
+        for i in reversed(range(self.blocks_container.count())):
+            widget = self.blocks_container.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+        # Add blocks from the data
+        for block_data in data["blocks"]:
+            block_type = block_data["type"]
+            parameters = layers.get(block_type, [])
+            new_block = CodeBlock(block_type, parameters)
+            new_block.setValues(block_data)
+            self.blocks_container.addWidget(new_block)
+    
+    def clear(self):
+        # Clear the code editor
+        for i in reversed(range(self.blocks_container.count())):
+            widget = self.blocks_container.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+        self.dataset_dropdown.setCurrentIndex(0)
 
 class CodeBlock(QWidget):
     def __init__(self, type, parameters=[]):
