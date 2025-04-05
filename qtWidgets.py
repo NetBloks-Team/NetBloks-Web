@@ -123,7 +123,6 @@ class WorkspaceSelecter(QWidget):
         file_path = f"saves/{self.dropdown.itemText(current_index)}.json"
         if current_index != -1:
             self.dropdown.removeItem(current_index)
-            file_path = f"saves/{self.dropdown.itemText(current_index)}.json"
         
         if os.path.exists(file_path):
             try:

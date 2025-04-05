@@ -1,6 +1,5 @@
 import os
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QScrollArea
-from PyQt6.QtWidgets import QHBoxLayout
+from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QScrollArea, QHBoxLayout
 import qtWidgets
 import gemini_gen
 
@@ -8,6 +7,9 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("AI Project")
+        # Set the geometry to the size of the screen
+        screen_geometry = self.screen().geometry()
+        self.setGeometry(screen_geometry)
         
         # Create the workspace selector and code editor
         self.code_editor = qtWidgets.CodeEditor()
