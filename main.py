@@ -34,6 +34,7 @@ def main():
     with open("llm_output.py", "w", encoding="utf-8") as f:
         f.write(output)
     os.system("python llm_output.py")
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
