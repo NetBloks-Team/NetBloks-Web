@@ -1,5 +1,3 @@
-import os
-from torchvision import datasets as vdatasets
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QScrollArea, QHBoxLayout
 import qtWidgets
 import gemini_gen
