@@ -22,7 +22,9 @@ def main():
     """
     ds_name = "MNIST"
     with open("llm_output.py", "w", encoding="utf-8") as f:
-        f.write(gemini_gen())
+        f.write(gemini_gen(ds_name))
+
+    os.system(f"python3 nn_wrapper.py")
 
 class MainWindow(QMainWindow):
     def __init__(self):

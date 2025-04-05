@@ -50,8 +50,8 @@ print(X_test.shape)
 with torch.no_grad():
     y_pred = net.forward(X_test)
 
-confusion_mtx = confusion_matrix(y_test, y_pred)
-hmap = sns.heatmap(
-   confusion_mtx, annot=True, fmt="g"
-)  # Create the data visualization
-plt.show()
+# confusion_mtx = confusion_matrix(y_test, y_pred)
+# hmap = sns.heatmap(
+#    confusion_mtx, annot=True, fmt="g"
+# )  # Create the data visualization
+# plt.show()
