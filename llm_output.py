@@ -2,63 +2,38 @@ import torch
 import torch.nn as nn
 
 class Net(nn.Module):
-    def __init__(self, layer_params, input_channels=3, input_size=(32, 32)):
+    def __init__(self):
         super(Net, self).__init__()
-        self.layer_list = []
-        in_channels = input_channels
-        current_in_size = list(input_size) # Make mutable
-        flatten_output_size = None
-
-        for layer_name, params in layer_params.items():
-            layer_type = params['type']
-            if layer_type == 'conv2d':
-                filters = params['filters']
-                kernel_size = params['kernel_size']
-                activation = params['activation']
-                self.layer_list.append(nn.Conv2d(in_channels, filters, kernel_size))
-                if activation == 'relu':
-                    self.layer_list.append(nn.ReLU())
-                in_channels = filters
-                current_in_size[0] = current_in_size[0] - kernel_size + 1
-                current_in_size[1] = current_in_size[1] - kernel_size + 1
-            elif layer_type == 'maxpool2d':
-                pool_size = params['pool_size']
-                self.layer_list.append(nn.MaxPool2d(pool_size))
-                current_in_size[0] = current_in_size[0] // pool_size
-                current_in_size[1] = current_in_size[1] // pool_size
-            elif layer_type == 'flatten':
-                self.layer_list.append(nn.Flatten())
-                flatten_output_size = in_channels * current_in_size[0] * current_in_size[1]
-            elif layer_type == 'dense':
-                units = params['units']
-                activation = params['activation']
-                if flatten_output_size is None:
-                    raise ValueError("Flatten layer must precede dense layer")
-                self.layer_list.append(nn.Linear(flatten_output_size, units))
-                if activation == 'relu':
-                    self.layer_list.append(nn.ReLU())
-            elif layer_type == 'dropout':
-                rate = params['rate']
-                self.layer_list.append(nn.Dropout(rate))
-            else:
-                raise ValueError(f"Unknown layer type: {layer_type}")
-
-        self.layers = nn.Sequential(*self.layer_list)
+        self.layer1_conv2d = nn.Conv2d(3, 32, kernel_size=3)
+        self.layer1_relu = nn.ReLU()
+        self.layer2_conv2d = nn.Conv2d(32, 64, kernel_size=3)
+        self.layer2_relu = nn.ReLU()
+        self.layer3_maxpool2d = nn.MaxPool2d(kernel_size=2)
+        self.layer4_flatten = nn.Flatten()
+        self.layer5_dense = nn.Linear(64 * 14 * 14, 128) # Placeholder, will be adjusted in forward if needed
+        self.layer5_relu = nn.ReLU()
+        self.layer6_dropout = nn.Dropout(0.5)
 
     def forward(self, x):
-        return self.layers(x)
+        x = self.layer1_conv2d(x)
+        x = self.layer1_relu(x)
+        x = self.layer2_conv2d(x)
+        x = self.layer2_relu(x)
+        x = self.layer3_maxpool2d(x)
+        x = self.layer4_flatten(x)
+        if self.layer5_dense.in_features != x.shape[1]:
+            self.layer5_dense = nn.Linear(x.shape[1], 128) # Adjust dense layer input size dynamically
+            self.layer5_dense.to(x.device) # Move to the same device if needed
+        x = self.layer5_dense(x)
+        x = self.layer5_relu(x)
+        x = self.layer6_dropout(x)
+        return x
 
 if __name__ == '__main__':
-    layer_params = {
-        "layer-1": {"type":"conv2d", "filters": 32, "kernel_size": 3, "activation": "relu"},
-        "layer-2": {"type":"conv2d", "filters": 64, "kernel_size": 3, "activation": "relu"},
-        "layer-3": {"type":"maxpool2d", "pool_size": 2},
-        "layer-4": {"type":"flatten"},
-        "layer-5": {"type":"dense", "units": 128, "activation": "relu"},
-        "layer-6": {"type":"dropout", "rate": 0.5}
-    }
-    net = Net(layer_params)
+    net = Net()
     print(net)
-    input_tensor = torch.randn(1, 3, 32, 32)
+
+    # Example input
+    input_tensor = torch.randn(1, 3, 32, 32) # Batch size 1, 3 channels, 32x32 image
     output = net(input_tensor)
-    print(output.shape)
+    print(output.shape) # Expected output shape: torch.Size([1, 128])
