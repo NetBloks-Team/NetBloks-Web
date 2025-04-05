@@ -11,13 +11,11 @@ EPOCHS = 8
 
 def run_model(ds_name: str) -> float:
     if ds_name == "MNIST":
-        dataset = datasets.MNIST
+        dataset = datasets.MNIST()
     elif ds_name == "CIFAR 10":
-        dataset = datasets.CIFAR10
+        dataset = datasets.CIFAR10()
     elif ds_name == "CIFAR 100":
-        dataset = datasets.CIFAR100
-    elif ds_name == "IMDB":
-        dataset = torch.datasets.idk
+        dataset = datasets.CIFAR100()
     train_ds = dataset(root='./data', train=True, transform=transforms.ToTensor(), download=True)
     test_ds = dataset(root='./data', train=False, transform=transforms.ToTensor(), download=True)
     print("Train set size:", train_ds.data.shape) # Send this info to the user terminal

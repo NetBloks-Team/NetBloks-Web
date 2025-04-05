@@ -54,5 +54,5 @@ class MainWindow(QMainWindow):
         ds_name = self.code_editor.get_dataset()
         
         # Run the code in the selected workspace
-        gemini_gen.gemini_gen(ds_name, code)
+        gemini_gen.gemini_gen(ds_name, str(code))
         run_model(ds_name)
