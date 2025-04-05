@@ -9,7 +9,7 @@ datasets = ["MNIST", "CIFAR 10", "CIFAR 100", "IMDB"]
 
 layers = {
     "Conv2d": ["channels","kernel_size", "stride"],
-    "Linear": ["in_features", "out_features"],
+    "Linear": ["out_features"],
     "MaxPool2d": ["kernel_size", "stride"],
     "Dropout": ["p"],
     "BatchNorm2d": ["num_features"],
