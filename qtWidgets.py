@@ -2,7 +2,7 @@ import json
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit, QScrollArea, QHBoxLayout, QSizePolicy
 from PyQt6.QtWidgets import QLabel, QFrame
 from PyQt6.QtCore import Qt, pyqtSlot
-from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QPainter, QColor
 import os
 import threading
 
@@ -175,6 +175,8 @@ class CodeEditor(QWidget):
         super().__init__()
         self.save = None
         self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(10, 0, 10, 0)
+        
         # Create a menu for adding and deleting code blocks
         self.menu_layout = QHBoxLayout()
         self.add_block_button = QPushButton("Add Layer Block")
@@ -183,6 +185,7 @@ class CodeEditor(QWidget):
         self.add_activation_button.clicked.connect(self.add_activation)
         self.clear_button = QPushButton("Clear")
         self.clear_button.clicked.connect(self.clear)
+        
         # Create a dropdown for selecting datasets
         self.dataset_dropdown = QComboBox()
         self.dataset_dropdown.addItems(datasets)
@@ -196,7 +199,12 @@ class CodeEditor(QWidget):
         self.menu_layout.addWidget(self.print_button)
         self.menu_layout.addWidget(self.clear_button)
         self.layout.addLayout(self.menu_layout)
-        
+
+        horizontal_line = QFrame()
+        horizontal_line.setFrameShape(QFrame.Shape.HLine)
+        horizontal_line.setStyleSheet("background-color: #333333;")
+        self.layout.addWidget(horizontal_line)
+
         # Create a scroll area for the code blocks
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)  # Enable resizing of the scroll area content
@@ -204,20 +212,28 @@ class CodeEditor(QWidget):
         self.scroll_area_content = QWidget()
         self.scroll_area_layout = QVBoxLayout(self.scroll_area_content)
         self.scroll_area_layout.setSpacing(10)  # Add spacing between blocks
-        self.scroll_area_layout.setContentsMargins(0, 0, 0, 0)
+        self.scroll_area_layout.setContentsMargins(5, 0, 5, 0)
         self.scroll_area_layout.setAlignment(Qt.AlignmentFlag.AlignTop)  # Stack blocks at the top
 
         self.scroll_area.setWidget(self.scroll_area_content)
-
-        self.scroll_area_container = QVBoxLayout()
-        self.scroll_area_container.setAlignment(Qt.AlignmentFlag.AlignTop)  # Align scroll area to the top
-        self.scroll_area_container.addWidget(self.scroll_area)
-        self.layout.addLayout(self.scroll_area_container)
-
+        
+        # Set fixed width for scroll area only
+        self.scroll_area.setFixedWidth(600)
+        
+        # Create a container widget for the scroll area
+        scroll_container = QWidget()
+        scroll_container_layout = QHBoxLayout(scroll_container)
+        scroll_container_layout.setContentsMargins(0, 0, 0, 0)
+        scroll_container_layout.addWidget(self.scroll_area)
+        scroll_container_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        # Add the scroll container to the main layout
+        self.layout.addWidget(scroll_container)
+        
         # Initialize blocks_container
         self.blocks_container = self.scroll_area_layout
 
-        self.setLayout(self.layout)     
+        self.setLayout(self.layout)   
 
     def set_saver(self, save):
         self.save = save
@@ -351,7 +367,7 @@ class CodeBlock(QWidget):
             # Add a horizontal line below the label
             self.horizontal_line = QFrame()
             self.horizontal_line.setFrameShape(QFrame.Shape.HLine)
-            self.horizontal_line.setFrameShadow(QFrame.Shadow.Sunken)
+            self.horizontal_line.setStyleSheet("background-color: black; border-color: black;")
             self.layout.addWidget(self.horizontal_line)
 
         # Add text entry boxes for each parameter
@@ -396,7 +412,7 @@ class CodeBlock(QWidget):
     def paintEvent(self, event):
             painter = QPainter(self)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-            painter.setBrush(Qt.GlobalColor.darkGray)
+            painter.setBrush(QColor(70, 70, 70))  # Custom RGB color
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(self.rect(), 10, 10)
 
