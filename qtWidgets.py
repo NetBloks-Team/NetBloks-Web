@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QLabel, QFrame
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QPainter
 import os
+import threading
 
 datasets = ["MNIST", "CIFAR 10", "CIFAR 100", "IMDB"]
 
@@ -481,21 +482,39 @@ class FeedbackModule(QWidget):
             self.chatbot_output.setText(self.chatbot_output.text() + f"\n\nYou: {message}\n\n")
             self.message_input.clear()
             response = None
-            if self.general_feedback:
-                response = self.chatbot(self.dataset_getter(), self.code_getter(), message)
+            if self.chatbot:
+                self.message_input.setDisabled(True)
+                self.send_button.setDisabled(True)
+                self.feedback_button.setDisabled(True)
+                def finish():
+                    response = self.chatbot(self.dataset_getter(), self.code_getter(), message)
+                    self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: {response}")
+                    self.message_input.setDisabled(False)
+                    self.send_button.setDisabled(False)
+                    self.feedback_button.setDisabled(False)
+                thread = threading.Thread(target=finish, daemon=True)
+                thread.start()
             else:
                 response = "No chatbot function provided."
-            self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: {response}")
-            # Simulate chatbot response (replace with actual logic)
+                self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: {response}")
 
     @pyqtSlot()
     def provide_feedback(self):
-        # Placeholder for feedback logic
         self.chatbot_output.setText(self.chatbot_output.text() + "\n\nRequesting feedback from the model...\n\n")
         response = None
         if self.general_feedback:
-            response = self.general_feedback(self.dataset_getter(), self.code_getter())
+            self.message_input.setDisabled(True)
+            self.send_button.setDisabled(True)
+            self.feedback_button.setDisabled(True)
+            def finish():
+                response = self.general_feedback(self.dataset_getter(), self.code_getter())
+                self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: {response}")
+                self.message_input.setDisabled(False)
+                self.send_button.setDisabled(False)
+                self.feedback_button.setDisabled(False)
+            thread = threading.Thread(target=finish, daemon=True)
+            thread.start()
         else:
             response = "No feedback function provided."
-        self.chatbot_output.setText(self.chatbot_output.text() + "Feedback:\n"+response)
+            self.chatbot_output.setText(self.chatbot_output.text() + "Feedback:\n"+response)
         
