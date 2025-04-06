@@ -30,6 +30,10 @@ def run_model(ds_name: str, printer = None) -> float:
     optimizer = torch.optim.Adam(net.parameters(), lr=0.01)
     n_total_steps = len(train_loader)
 
+    prev_model_loss = None  # this keeps track of the loss from the previous epoch
+    low_flag = False
+    high_flag = False
+
     for i in range(EPOCHS):
         # train
         running_loss = 0.0  # this keeps track of the loss per epoch
@@ -45,7 +49,16 @@ def run_model(ds_name: str, printer = None) -> float:
             optimizer.step()
             # record loss
             running_loss += loss.item()
-        printer(f"Training cycle: {i} of {EPOCHS}. Your current loss is {running_loss / n_total_steps}.\nLower loss means your model is performing better.")
+        model_loss = running_loss / n_total_steps
+        printer(f"Training cycle: {i} of {EPOCHS}. Your current loss is {model_loss}.\nLower loss means your model is performing better.")
+        if prev_model_loss is not None:
+            if model_loss < prev_model_loss and not low_flag:
+                printer("Your model loss has decreased. This means your model is performing well.")
+                low_flag = True
+            elif model_loss > prev_model_loss and not high_flag:
+                printer("Your model loss has increased. This could mean your model is exploring the data space. If this continues, your model may be overfitting.")
+                high_flag = True
+        prev_model_loss = model_loss
 
     printer("Network training done!")
 
@@ -55,6 +68,7 @@ def run_model(ds_name: str, printer = None) -> float:
         y_pred = net.forward(X_test)
     accuracy = 0
     for i in range (len(y_pred)):
+        print(y_pred[i])
         if y_pred[i] == y_test[i]:
             accuracy += 1
     accuracy = accuracy / len(y_pred)

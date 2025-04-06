@@ -34,7 +34,7 @@ def train(model, device, train_loader, optimizer, epoch):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = F.nll_loss(output, target)
+        loss = F.cross_entropy(output, target)
         loss.backward()
         optimizer.step()
         if batch_idx % 100 == 0:
@@ -50,7 +50,7 @@ def test(model, device, test_loader):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
+            test_loss += F.cross_entropy(output, target, reduction='sum').item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 
@@ -66,12 +66,11 @@ if __name__ == '__main__':
     test_batch_size = 1000
     epochs = 1
     lr = 0.01
-    momentum = 0.5
-    no_cuda = False
+    gamma = 0.7
+    use_cuda = torch.cuda.is_available()
     seed = 1
     log_interval = 10
-
-    use_cuda = not no_cuda and torch.cuda.is_available()
+    save_model = False
 
     torch.manual_seed(seed)
 
@@ -98,7 +97,7 @@ if __name__ == '__main__':
     test_loader = DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
 
     for epoch in range(1, epochs + 1):
         train(model, device, train_loader, optimizer, epoch)

@@ -12,7 +12,7 @@ from google import genai
 
 #-----Function Section-----
 
-def gemini_gen(ds_name: str, nn_struct: str) -> str:
+def gemini_gen(ds_name: str, nn_struct: str, error_msg:str = None) -> str:
     """
     Method for generating a neural network from a prompt
 
@@ -25,15 +25,20 @@ def gemini_gen(ds_name: str, nn_struct: str) -> str:
     full_prompt = ""
     full_prompt += "Please generate python code for a pytorch neural network that has the following parameters:\n"
     full_prompt += nn_struct
-    full_prompt += "\nOnly give code, and do not reply with anything else. Give the code as an entire file that can be executed."
     full_prompt += "The neural network class is named 'Net'"
     full_prompt += f"We are training the network on the {ds_name} dataset."
     full_prompt += "Make sure the input size is correct for the dataset. (i.e. 1 channel for B/W images like MNIST, 3 channels for RGB images like CIFAR 10)"
+    if error_msg != None:
+        full_prompt += f"\nThe following error was generated: {error_msg}"
+        full_prompt += "\nPlease fix the code to remove this error."
+        with open("llm_output.py", "r", encoding="utf-8") as f:
+            full_prompt += f"\nThe previous code is:\n{f.read()}"
+    full_prompt += "\nOnly give code, and do not reply with anything else. Give the code as an entire file that can be executed."
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
     output = response.text.strip("```").removeprefix("python\n")
-    with open("llm_output.py", "w") as f:
+    with open("llm_output.py", "w", encoding="utf-8") as f:
             f.write(output)
     return output
 
