@@ -45,7 +45,7 @@ def run_model(ds_name: str, printer = None) -> float:
             optimizer.step()
             # record loss
             running_loss += loss.item()
-        printer("Training cycle:", i, "of", EPOCHS, "   loss:", running_loss / n_total_steps, " (lower loss means your model is performing better)")
+        printer(f"Training cycle: {i} of {EPOCHS}, your current loss is: {running_loss / n_total_steps} (lower loss means your model is performing better)")
 
     printer("Network training done!")
 
