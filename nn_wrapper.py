@@ -11,6 +11,7 @@ import gemini_gen
 EPOCHS = 8
 
 def run_model(ds_name: str, printer = None, nn_struct: str = None) -> float:
+    printer("Loading dataset...")
     if ds_name == "MNIST":
         train_ds = datasets.MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         test_ds = datasets.MNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)

@@ -10,6 +10,8 @@ from PyQt6.QtCore import Q_ARG
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.thread = None
+
         self.setWindowTitle("AI Project")
         # Set the geometry to the size of the screen
         screen_geometry = self.screen().availableGeometry()
@@ -30,6 +32,10 @@ class MainWindow(QMainWindow):
         h_layout_left = QHBoxLayout()
         self.run_button = QPushButton("Run")
         self.run_button.clicked.connect(self.on_run)
+
+        self.cancel_button = QPushButton("Stop")
+        self.cancel_button.clicked.connect(self.stop)
+        self.cancel_button.hide()
         
         h_layout_left.setAlignment(qtWidgets.Qt.AlignmentFlag.AlignLeft)
         h_layout_left.addWidget(self.workspace_selector)
@@ -37,6 +43,7 @@ class MainWindow(QMainWindow):
         h_layout_right = QHBoxLayout()
         h_layout_right.setAlignment(qtWidgets.Qt.AlignmentFlag.AlignRight)
         h_layout_right.addWidget(self.run_button, alignment=qtWidgets.Qt.AlignmentFlag.AlignRight)
+        h_layout_right.addWidget(self.cancel_button, alignment=qtWidgets.Qt.AlignmentFlag.AlignRight)
         h_layout = QHBoxLayout()
         h_layout.addLayout(h_layout_left)
         h_layout.addLayout(h_layout_right)
@@ -72,6 +79,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def on_run(self):
+        self.cancel_button.show()
+        self.run_button.setEnabled(False)
+        self.console.add_output("Initializing trainer...")
+
         # Get the code from the code editor
         code = self.code_editor.get_json_data()
         ds_name = self.code_editor.get_dataset()
@@ -80,8 +91,18 @@ class MainWindow(QMainWindow):
         def finish_run():
             gemini_gen.gemini_gen(ds_name, str(code))
             run_model(ds_name, self.console.add_output, nn_struct=str(code))
+            self.run_button.setEnabled(True)
+            self.cancel_button.hide()
 
         # Create a new thread to run the code
-        thread = threading.Thread(target=finish_run, daemon=True)
-        thread.start()
+        self.thread = threading.Thread(target=finish_run, daemon=True)
+        self.thread.start()
+    
+    def stop(self):
+        self.console.add_output("Stopping the training process...")
+        if self.thread and self.thread.is_alive():
+            self.thread.join(timeout=1)
+        
+        self.cancel_button.hide()
+        self.run_button.setEnabled(True)
         

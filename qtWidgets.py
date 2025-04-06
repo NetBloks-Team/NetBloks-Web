@@ -437,7 +437,7 @@ class Console(QWidget):
                 wrapped_text += " " + word
 
         text = wrapped_text.strip()
-        self.console_output.setText(text + "\n" + self.console_output.text())
+        self.console_output.setText(self.console_output.text() + "\n\n" + text + "\n")
 
 class FeedbackModule(QWidget):
     def __init__(self, general_feedback=None, chatbot=None, dataset_getter=None, code_getter=None):
