@@ -6,6 +6,9 @@ from PyQt6.QtGui import QPainter, QColor
 import os
 import threading
 
+LAYER_BLOCK_COLOR = QColor(70, 90, 126)      # Blue-gray for layers
+ACTIVATION_BLOCK_COLOR = QColor(126, 87, 107)
+
 datasets = ["MNIST", "CIFAR 10", "CIFAR 100", "KMNIST", "SVHN"]
 
 layers = {
@@ -431,7 +434,11 @@ class CodeBlock(QWidget):
     def paintEvent(self, event):
             painter = QPainter(self)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-            painter.setBrush(QColor(70, 70, 70))  # Custom RGB color
+            if self.type in layers.keys():
+                painter.setBrush(LAYER_BLOCK_COLOR)
+            else:
+                painter.setBrush(ACTIVATION_BLOCK_COLOR)
+            # painter.setBrush(QColor(70, 70, 70))  # Custom RGB color
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(self.rect(), 10, 10)
 
