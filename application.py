@@ -35,11 +35,21 @@ class MainWindow(QMainWindow):
         h_layout.addLayout(h_layout_left)
         h_layout.addLayout(h_layout_right)
         layout.addLayout(h_layout)
+        # Add a horizontal separator below the top bar
+        separator = qtWidgets.QFrame()
+        separator.setFrameShape(qtWidgets.QFrame.Shape.HLine)
+        separator.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
+        layout.addWidget(separator)
 
         mid_layout = QHBoxLayout()
-        console = qtWidgets.Console()
-        console.setMaximumWidth(200)
-        mid_layout.addWidget(console)
+        self.console = qtWidgets.Console()
+        self.console.setMaximumWidth(200)
+        mid_layout.addWidget(self.console)
+        # Add a vertical separator between the console and the code editor
+        vertical_separator = qtWidgets.QFrame()
+        vertical_separator.setFrameShape(qtWidgets.QFrame.Shape.VLine)
+        vertical_separator.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
+        mid_layout.addWidget(vertical_separator)
         mid_layout.addWidget(self.code_editor)
         # Add the code editor with scroll functionality
         layout.addLayout(mid_layout)

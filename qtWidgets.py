@@ -1,5 +1,5 @@
 import json
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit, QScrollArea, QHBoxLayout
+from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit, QScrollArea, QHBoxLayout, QSizePolicy
 from PyQt6.QtWidgets import QLabel, QFrame
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter
@@ -403,6 +403,9 @@ class Console(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.setLayout(self.layout)
         self.setWindowTitle("Console")
         title_label = QLabel("Console Output")
@@ -410,10 +413,12 @@ class Console(QWidget):
         font = title_label.font()
         font.setPointSize(16)
         title_label.setFont(font)
-        self.layout.addWidget(title_label)
+        self.layout.addWidget(title_label, stretch=0)
         self.console_output = QLabel()
         self.console_output.setWordWrap(True)
-        self.console_output.setStyleSheet("background-color: #222222; padding: 10px; border-radius: 5px;")
+        self.console_output.setStyleSheet("background-color: #444444; padding: 10px; border-radius: 5px;")
+        self.layout.addWidget(self.console_output, stretch=1)
+        self.add_output("\n")
 
 
     def add_output(self, text):
