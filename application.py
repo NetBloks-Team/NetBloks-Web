@@ -3,7 +3,6 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QScr
 import qtWidgets
 import gemini_gen
 import threading
-from nn_wrapper import run_model
 
 EPOCHS = 8
 
@@ -102,7 +101,7 @@ class MainWindow(QMainWindow):
                 self.console.add_output("Running model...")
                 run_model(ds_name, self.console.add_output, nn_struct=str(code), epochs=EPOCHS)
             except Exception as e:
-                self.console.add_output(gemini_gen.explain_error(ds_name, str(code), str(e)))
+                self.console.add_output("An error occurred:\n" + gemini_gen.explain_error(ds_name, str(code), str(e)))
             self.run_button.setEnabled(True)
             self.cancel_button.hide()
 
