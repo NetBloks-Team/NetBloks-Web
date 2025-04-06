@@ -155,7 +155,7 @@ def explain_error(ds_name: str, nn_struct: str, error_msg:str) -> str:
     If the error is related to the design of the neural network, explain why the error occured and how to fix it.
     If the error is not related to the design of the neural network, say "An internal error occurred. Please try again."
 
-    Do not give any code or "*"s, and do not reply with anything else.
+    Give a very concise response (less than 4 sentences), do not give any code or "*"s, and do not reply with anything else.
     """
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
