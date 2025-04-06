@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QScr
 import qtWidgets
 import gemini_gen
 from nn_wrapper import run_model
+import multiprocessing
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -68,4 +69,6 @@ class MainWindow(QMainWindow):
         
         # Run the code in the selected workspace
         gemini_gen.gemini_gen(ds_name, str(code))
-        run_model(ds_name, self.console.add_output)
+        process = multiprocessing.Process(target=run_model, args=(ds_name, self.console.add_output))
+        process.start()
+        # process.join()
