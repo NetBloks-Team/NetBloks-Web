@@ -60,12 +60,13 @@ def gemini_fb(ds_name: str, nn_struct: str) -> str:
     {nn_struct}
     Make sure to give feedback on the following:
     - The overall structure of the neural network
-    - The number of layers
     - The number of neurons in each layer
     - The activation functions used.
+    - Positive and negative aspects of the network.
+    - Suggestions for improvement.
 
-    Do not give any code, and do not reply with anything else. Only give feedback.
-    Do not mention training or testing the network.
+    Do not give any code or markdown. Only give feedback, remember it should be positive and negative.
+    Do not mention training or testing the network, or errors.
     Do not mention any errors.
     Keep the feedback simple and easy to understand and less than 4 sentences.
     """
@@ -89,11 +90,6 @@ def gemini_chatbot(ds_name: str, nn_struct: str, message) -> str:
     The user is training the network on the {ds_name} dataset.
     Here is a json representation of the neural network:
     {nn_struct}
-    Make sure to give feedback on the following:
-    - The overall structure of the neural network
-    - The number of layers
-    - The number of neurons in each layer
-    - The activation functions used.
 
     Do not give any code, and do not reply with anything else. Only give feedback.
     Do not mention training or testing the network.
