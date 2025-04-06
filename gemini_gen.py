@@ -22,7 +22,7 @@ def gemini_gen(ds_name: str, nn_struct: str, error_msg:str = None) -> str:
     #print("You are using API key:", os.environ["GEMINI_KEY"])
     #Make sure to put your Gemini API key in the environment variables
     client = genai.Client(api_key=os.environ["GEMINI_KEY"])
-    full_prompt = """
+    full_prompt = f"""
     Please generate python code for a pytorch neural network that has the following parameters:
     {nn_struct}
     The neural network class is named 'Net'
