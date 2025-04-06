@@ -123,3 +123,26 @@ def explain_layer(ds_name: str, nn_struct: str, layer) -> str:
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
     return response.text
+
+def explain_error(ds_name: str, nn_struct: str, error_msg:str) -> str:
+    """
+    Method for generating a feedback on a user's neural network
+
+    returns: str
+    A string containing feedback
+    """
+    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    full_prompt = f"""
+    You previously gave feedback to a user on their neural network for the {ds_name} dataset.
+    Here is the json representation of the neural network:
+    {nn_struct}
+    The following error was generated: {error_msg}
+    If the error is related to the design of the neural network, explain why the error occured and how to fix it.
+    If the error is not related to the design of the neural network, say "An internal error occurred. Please try again."
+
+    Do not give any code or "*"s, and do not reply with anything else.
+    """
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
+    )
+    return response.text

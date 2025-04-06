@@ -3,8 +3,6 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QScr
 import qtWidgets
 import gemini_gen
 import threading
-from PyQt6.QtCore import QMetaObject, Qt
-from PyQt6.QtCore import Q_ARG
 from nn_wrapper import run_model
 
 EPOCHS = 8
@@ -98,9 +96,13 @@ class MainWindow(QMainWindow):
 
         # Run the code in a separate thread
         def finish_run():
-            
+            from nn_wrapper import run_model
             gemini_gen.gemini_gen(ds_name, str(code))
-            run_model(ds_name, self.console.add_output, nn_struct=str(code), epochs=EPOCHS)
+            try:
+                self.console.add_output("Running model...")
+                run_model(ds_name, self.console.add_output, nn_struct=str(code), epochs=EPOCHS)
+            except Exception as e:
+                self.console.add_output(gemini_gen.explain_error(ds_name, str(code), str(e)))
             self.run_button.setEnabled(True)
             self.cancel_button.hide()
 
