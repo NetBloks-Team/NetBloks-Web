@@ -424,8 +424,7 @@ class Console(QWidget):
 
     @pyqtSlot(str)
     def add_output(self, text):
-        max_length = 25
-        print(text)
+        max_length = 40
         text = text.split(" ")
         wrapped_text = ""
         for word in text:
@@ -440,8 +439,9 @@ class Console(QWidget):
         self.console_output.setText(text + "\n" + self.console_output.text())
 
 class FeedbackModule(QWidget):
-    def __init__(self):
+    def __init__(self, chatbot):
         super().__init__()
+        self.chatbot = chatbot
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(10)
@@ -475,12 +475,13 @@ class FeedbackModule(QWidget):
     def send_message(self):
         message = self.message_input.text().strip()
         if message:
-            self.chatbot_output.setText(f"You: {message}\n" + self.chatbot_output.text())
+            self.chatbot_output.setText(self.chatbot_output.text() + f"\n\nYou: {message}\n\n")
             self.message_input.clear()
             # Simulate chatbot response (replace with actual logic)
-            self.chatbot_output.setText(f"Chatbot: I received your message.\n" + self.chatbot_output.text())
+            self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: I received your message.")
 
     @pyqtSlot()
     def provide_feedback(self):
         # Placeholder for feedback logic
-        self.chatbot_output.setText("Feedback: Thank you for your input!\n" + self.chatbot_output.text())
+        self.chatbot_output.setText(self.chatbot_output.text() + "\n\nRequesting feedback from the model...\n\n")
+        

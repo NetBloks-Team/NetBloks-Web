@@ -47,6 +47,10 @@ class MainWindow(QMainWindow):
         separator.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
         layout.addWidget(separator)
 
+        feedback_module = qtWidgets.FeedbackModule()
+        feedback_module.setMaximumWidth(400)
+        feedback_module.setMinimumWidth(400)
+
         mid_layout = QHBoxLayout()
         self.console = qtWidgets.Console()
         self.console.setMaximumWidth(400)
@@ -57,6 +61,8 @@ class MainWindow(QMainWindow):
         vertical_separator.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
         mid_layout.addWidget(vertical_separator)
         mid_layout.addWidget(self.code_editor)
+        mid_layout.addWidget(vertical_separator)
+        mid_layout.addWidget(feedback_module)
         # Add the code editor with scroll functionality
         layout.addLayout(mid_layout)
         
