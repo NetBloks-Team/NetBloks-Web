@@ -415,9 +415,13 @@ class Console(QWidget):
         font.setPointSize(16)
         title_label.setFont(font)
         self.layout.addWidget(title_label, stretch=0)
-        self.console_output = QLabel()
-        self.console_output.setWordWrap(True)
-        self.console_output.setStyleSheet("background-color: #444444; padding: 10px; border-radius: 5px;")
+        self.console_output = QScrollArea()
+        self.console_output.setWidgetResizable(True)
+        self.console_content = QLabel()
+        self.console_content.setWordWrap(True)
+        self.console_content.setStyleSheet("background-color: #444444; padding: 10px; border-radius: 5px;")
+        self.console_content.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.console_output.setWidget(self.console_content)
         self.layout.addWidget(self.console_output, stretch=1)
         self.add_output("\nConsole output will appear here. For more information, check the terminal.")
         self.console_output.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -437,7 +441,8 @@ class Console(QWidget):
                 wrapped_text += " " + word
 
         text = wrapped_text.strip()
-        self.console_output.setText(self.console_output.text() + "\n\n" + text + "\n")
+        self.console_content.setText(self.console_content.text() + "\n\n" + text + "\n")
+        self.console_output.verticalScrollBar().setValue(self.console_output.verticalScrollBar().maximum())
 
 class FeedbackModule(QWidget):
     def __init__(self, general_feedback=None, chatbot=None, dataset_getter=None, code_getter=None):
@@ -453,12 +458,15 @@ class FeedbackModule(QWidget):
         self.setLayout(self.layout)
 
         # Chatbot response box
+        self.chatbot_scroll_area = QScrollArea()
+        self.chatbot_scroll_area.setWidgetResizable(True)
         self.chatbot_output = QLabel()
         self.chatbot_output.setWordWrap(True)
         self.chatbot_output.setStyleSheet("background-color:rgb(70, 70, 70); padding: 10px; border-radius: 5px;")
         self.chatbot_output.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.chatbot_output.setText("Chatbot responses will appear here.")
-        self.layout.addWidget(self.chatbot_output, stretch=1)
+        self.chatbot_scroll_area.setWidget(self.chatbot_output)
+        self.layout.addWidget(self.chatbot_scroll_area, stretch=1)
 
         # Input field and send button
         input_layout = QHBoxLayout()
