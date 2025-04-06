@@ -5,10 +5,10 @@ from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from torchtext import datasets as tdatasets
-import llm_output
 import gemini_gen
 
 def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int = 8) -> float:
+    import llm_output
     printer("Loading dataset...")
     if ds_name == "MNIST":
         train_ds = datasets.MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
