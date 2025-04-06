@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
 
 class Net(nn.Module):
     def __init__(self):
@@ -12,20 +11,18 @@ class Net(nn.Module):
         self.relu1 = nn.ReLU()
         self.conv2 = nn.Conv2d(32, 64, 3)
         self.relu2 = nn.ReLU()
-        self.maxpool1 = nn.MaxPool2d(2)
+        self.maxpool = nn.MaxPool2d(2)
         self.flatten = nn.Flatten()
-        self.dropout1 = nn.Dropout(0.3)
-        self.fc1 = nn.Linear(64 * 12 * 12, 10) # Calculated in_features based on layers
+        self.dropout = nn.Dropout(0.3)
+        self.fc = nn.Linear(64 * 12 * 12, 10) # Adjusted input size after pooling
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.relu1(x)
-        x = self.conv2(x)
-        x = self.relu2(x)
-        x = self.maxpool1(x)
+        x = self.relu1(self.conv1(x))
+        x = self.relu2(self.conv2(x))
+        x = self.maxpool(x)
         x = self.flatten(x)
-        x = self.dropout1(x)
-        x = self.fc1(x)
+        x = self.dropout(x)
+        x = self.fc(x)
         return x
 
 def train(model, device, train_loader, optimizer, epoch):
@@ -66,12 +63,11 @@ def main():
     test_batch_size = 1000
     epochs = 10
     lr = 0.01
-    momentum = 0.5
-    no_cuda = False
+    gamma = 0.7
+    use_cuda = torch.cuda.is_available()
     seed = 1
     log_interval = 10
-
-    use_cuda = not no_cuda and torch.cuda.is_available()
+    save_model = False
 
     torch.manual_seed(seed)
 
@@ -89,21 +85,23 @@ def main():
     transform=transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    dataset1 = datasets.MNIST('../data', train=True, download=True,
+        ])
+    dataset1 = datasets.MNIST('./data', train=True, download=True,
                        transform=transform)
-    dataset2 = datasets.MNIST('../data', train=False,
+    dataset2 = datasets.MNIST('./data', train=False,
                        transform=transform)
-    train_loader = DataLoader(dataset1,**train_kwargs)
-    test_loader = DataLoader(dataset2, **test_kwargs)
+    train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
+    test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
 
     for epoch in range(1, epochs + 1):
         train(model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
 
+    if save_model:
+        torch.save(model.state_dict(), "mnist_cnn.pt")
 
 if __name__ == '__main__':
     main()

@@ -68,6 +68,7 @@ def run_model(ds_name: str, printer = None) -> float:
         y_pred = net.forward(X_test)
     accuracy = 0
     for i in range (len(y_pred)):
+        print(y_pred[i])
         if y_pred[i] == y_test[i]:
             accuracy += 1
     accuracy = accuracy / len(y_pred)
