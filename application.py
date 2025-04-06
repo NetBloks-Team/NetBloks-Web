@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
         # Run the code in a separate thread
         def finish_run():
             gemini_gen.gemini_gen(ds_name, str(code))
-            run_model(ds_name, self.console.add_output)
+            run_model(ds_name, self.console.add_output, nn_struct=str(code))
 
         # Create a new thread to run the code
         thread = threading.Thread(target=finish_run, daemon=True)

@@ -89,11 +89,9 @@ def gemini_chatbot(ds_name: str, nn_struct: str, message) -> str:
     You previously gave feedback to a user on their neural network for the {ds_name} dataset.
     Here is the json representation of the neural network:
     {nn_struct}
-    Here is a conversation with the user: {message}. Please respond.
+    Here is a conversation with the user: {message}. Please respond and engage with the user's message.
 
     Do not give any code, and do not reply with anything else. Only give feedback.
-
-    
     """
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt

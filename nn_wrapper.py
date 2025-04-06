@@ -1,13 +1,16 @@
+import time
+import importlib
 import torch
 from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from llm_output import Net
+import gemini_gen
 
 
 EPOCHS = 8
 
-def run_model(ds_name: str, printer = None) -> float:
+def run_model(ds_name: str, printer = None, nn_struct: str = None) -> float:
     if ds_name == "MNIST":
         train_ds = datasets.MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         test_ds = datasets.MNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)
@@ -19,8 +22,7 @@ def run_model(ds_name: str, printer = None) -> float:
         test_ds = datasets.CIFAR100(root='./data', train=False, transform=transforms.ToTensor(), download=True)
     else:
         raise ValueError(f"Unknown dataset: {ds_name}")
-    printer(f"Training on {train_ds.data.shape[0]} data points.") # Send this info to the user terminal
-    printer(f"Testing on {test_ds.data.shape[0]} data points.")
+    printer(f"Training on {train_ds.data.shape[0]} data points.")
     train_loader = DataLoader(
         train_ds, batch_size=64, shuffle=True, drop_last=True
     )
@@ -41,7 +43,19 @@ def run_model(ds_name: str, printer = None) -> float:
         for _, (X_train, y_train) in enumerate(train_loader):
             X_train, y_train = X_train.to("cpu"), y_train.to("cpu")
             # forward pass
-            y_pred = net.forward(X_train)
+            try:
+                y_pred = net.forward(X_train)
+            except Exception as e:
+                gemini_gen.gemini_gen(ds_name, nn_struct, str(e))
+                printer(f"An error occurred in the original neural network, regenerating")
+                importlib.reload(llm_output.Net)
+                net = Net()
+                try:
+                    y_pred = net.forward(X_train)
+                except Exception as e:
+                    printer(f"An error occurred in the regenerated neural network, terminating in 5 seconds.")
+                    time.sleep(5)
+                    raise e
             loss = criterion(y_pred, y_train)
             # backward pass
             optimizer.zero_grad()
@@ -61,6 +75,8 @@ def run_model(ds_name: str, printer = None) -> float:
         prev_model_loss = model_loss
 
     printer("Network training done!")
+
+    printer(f"Testing on {test_ds.data.shape[0]} data points.")
 
     X_test = torch.reshape(test_ds.data.float(), (-1, 1, 28, 28))
     y_test = test_ds.targets
