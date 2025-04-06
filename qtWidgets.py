@@ -423,4 +423,3 @@ class Console(QWidget):
 
     def add_output(self, text):
         self.console_output.setText(self.console_output.text() + "\n" + text)
-        self.layout.addWidget(self.console_output)

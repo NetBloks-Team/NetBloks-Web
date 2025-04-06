@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
 
         mid_layout = QHBoxLayout()
         self.console = qtWidgets.Console()
-        self.console.setMaximumWidth(200)
+        self.console.setMaximumWidth(400)
         mid_layout.addWidget(self.console)
         # Add a vertical separator between the console and the code editor
         vertical_separator = qtWidgets.QFrame()
