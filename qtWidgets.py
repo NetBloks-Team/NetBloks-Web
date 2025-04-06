@@ -406,12 +406,14 @@ class Console(QWidget):
         self.setLayout(self.layout)
         self.setWindowTitle("Console")
         title_label = QLabel("Console Output")
-        title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_label.setAlignment(Qt.AlignmentFlag.AlignTop)
         font = title_label.font()
         font.setPointSize(16)
         title_label.setFont(font)
         self.layout.addWidget(title_label)
         self.console_output = QLabel()
+        self.console_output.setWordWrap(True)
+        self.console_output.setStyleSheet("background-color: #222222; padding: 10px; border-radius: 5px;")
 
 
     def add_output(self, text):

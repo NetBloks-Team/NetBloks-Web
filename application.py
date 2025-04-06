@@ -35,8 +35,14 @@ class MainWindow(QMainWindow):
         h_layout.addLayout(h_layout_left)
         h_layout.addLayout(h_layout_right)
         layout.addLayout(h_layout)
+
+        mid_layout = QHBoxLayout()
+        console = qtWidgets.Console()
+        console.setMaximumWidth(200)
+        mid_layout.addWidget(console)
+        mid_layout.addWidget(self.code_editor)
         # Add the code editor with scroll functionality
-        layout.addWidget(self.code_editor)
+        layout.addLayout(mid_layout)
         
         # Set the layout to a container widget
         container = QWidget()
