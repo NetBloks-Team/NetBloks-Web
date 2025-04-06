@@ -1,86 +1,103 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvision
-import torchvision.transforms as transforms
 import torch.optim as optim
+from torchvision import datasets, transforms
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.layers = nn.ModuleList()
-        layer_config = [{'type': 'Conv2d', 'out_channels': '16', 'kernel_size': '3', 'stride': ''}, {'type': 'ReLU'}, {'type': 'MaxPool2d', 'kernel_size': '2', 'stride': ''}, {'type': 'Conv2d', 'out_channels': '64', 'kernel_size': '3', 'stride': ''}, {'type': 'ReLU'}, {'type': 'MaxPool2d', 'kernel_size': '2', 'stride': ''}, {'type': 'Dropout', 'p': '0.25'}, {'type': 'Linear', 'out_features': '840'}, {'type': 'ReLU'}, {'type': 'Linear', 'out_features': '100'}]
-        in_channels = 1
-        for layer_param in layer_config:
-            layer_type = layer_param['type']
-            if layer_type == 'Conv2d':
-                out_channels = int(layer_param['out_channels'])
-                kernel_size = int(layer_param['kernel_size'])
-                stride = int(layer_param['stride']) if layer_param['stride'] != '' else 1
-                self.layers.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride=stride))
-                in_channels = out_channels
-            elif layer_type == 'ReLU':
-                self.layers.append(nn.ReLU())
-            elif layer_type == 'MaxPool2d':
-                kernel_size = int(layer_param['kernel_size'])
-                stride = int(layer_param['stride']) if layer_param['stride'] != '' else None
-                self.layers.append(nn.MaxPool2d(kernel_size, stride=stride))
-            elif layer_type == 'Dropout':
-                p = float(layer_param['p'])
-                self.layers.append(nn.Dropout(p))
-            elif layer_type == 'Linear':
-                out_features = int(layer_param['out_features'])
-                if layer_param == layer_config[7]:
-                    self.layers.append(nn.Linear(64 * 5 * 5, out_features))
-                else:
-                    prev_layer_out_features = int(layer_config[layer_config.index(layer_param)-2]['out_features'])
-                    self.layers.append(nn.Linear(prev_layer_out_features, out_features))
-        self.flatten = nn.Flatten()
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3)
+        self.relu1 = nn.ReLU()
+        self.maxpool1 = nn.MaxPool2d(kernel_size=2)
+        self.conv2 = nn.Conv2d(16, 64, kernel_size=3)
+        self.relu2 = nn.ReLU()
+        self.maxpool2 = nn.MaxPool2d(kernel_size=2)
+        self.dropout = nn.Dropout(0.25)
+        self.fc1 = nn.Linear(5 * 5 * 64, 840)
+        self.relu3 = nn.ReLU()
+        self.fc2 = nn.Linear(840, 100)
 
     def forward(self, x):
-        for layer in self.layers[:7]:
-            x = layer(x)
-        x = self.flatten(x)
-        for layer in self.layers[7:]:
-            x = layer(x)
+        x = self.maxpool1(self.relu1(self.conv1(x)))
+        x = self.maxpool2(self.relu2(self.conv2(x)))
+        x = self.dropout(x)
+        x = x.view(-1, 5 * 5 * 64)
+        x = self.relu3(self.fc1(x))
+        x = self.fc2(x)
         return x
 
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.1307,), (0.3081,))
-])
-
-train_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=True)
-test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1000, shuffle=False)
-
-model = Net()
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters())
-
-epochs = 2
-for epoch in range(epochs):
+def train(model, device, train_loader, optimizer, epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = criterion(output, target)
+        loss = F.cross_entropy(output, target)
         loss.backward()
         optimizer.step()
         if batch_idx % 100 == 0:
-            print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                epoch, batch_idx * len(data), len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), loss.item()))
 
+def test(model, device, test_loader):
     model.eval()
     test_loss = 0
     correct = 0
     with torch.no_grad():
         for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += criterion(output, target).item()
-            pred = output.argmax(dim=1, keepdim=True)
+            test_loss += F.cross_entropy(output, target, reduction='sum').item()  # sum up batch loss
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 
-    test_loss /= len(test_loader)
-    print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n')
+    test_loss /= len(test_loader.dataset)
+
+    print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        test_loss, correct, len(test_loader.dataset),
+        100. * correct / len(test_loader.dataset)))
+
+def main():
+    # Training settings
+    batch_size = 64
+    test_batch_size = 1000
+    epochs = 10
+    lr = 0.01
+    momentum = 0.5
+    no_cuda = False
+    seed = 1
+    log_interval = 10
+
+    use_cuda = not no_cuda and torch.cuda.is_available()
+
+    torch.manual_seed(seed)
+
+    device = torch.device("cuda" if use_cuda else "cpu")
+
+    kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
+    train_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data', train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ])),
+        batch_size=batch_size, shuffle=True, **kwargs)
+    test_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('../data', train=False, transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ])),
+        batch_size=test_batch_size, shuffle=True, **kwargs)
+
+    model = Net().to(device)
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
+
+    for epoch in range(1, epochs + 1):
+        train(model, device, train_loader, optimizer, epoch)
+        test(model, device, test_loader)
+
+
+if __name__ == '__main__':
+    main()

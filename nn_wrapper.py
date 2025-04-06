@@ -89,11 +89,12 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int =
     except Exception as e:
         printer(f"An error occurred while reshaping the test data: {e}")
         raise e
+    y_test = test_ds.targets
     with torch.no_grad():
         y_pred = net.forward(X_test)
     accuracy = 0
     for i in range (len(y_pred)):
-        printer(f"Predicted: {torch.argmax(y_pred[i])}, Actual: {y_test[i]}")
+        # printer(f"Predicted: {torch.argmax(y_pred[i])}, Actual: {y_test[i]}")
         if torch.argmax(y_pred[i]) == y_test[i]:
             accuracy += 1
     accuracy = accuracy / len(y_pred)
