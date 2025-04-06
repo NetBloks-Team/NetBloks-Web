@@ -49,14 +49,62 @@ def gemini_fb(ds_name: str, nn_struct: str) -> str:
     returns: str
     A string containing feedback
     """
+
     #print("You are using API key:", os.environ["GEMINI_KEY"])
     #Make sure to put your Gemini API key in the environment variables
     client = genai.Client(api_key=os.environ["GEMINI_KEY"])
-    full_prompt = ""
-    full_prompt += "Please generate python code for a pytorch neural network that has the following parameters:\n"
-    full_prompt += nn_struct
-    full_prompt += f"\nWe are training the network on the {ds_name} dataset"
+    full_prompt = f"""
+    Please generate feedback on the following neural network for a beginner with programming.
+    The user is training the network on the {ds_name} dataset.
+    Here is a json representation of the neural network:
+    {nn_struct}
+    Make sure to give feedback on the following:
+    - The overall structure of the neural network
+    - The number of layers
+    - The number of neurons in each layer
+    - The activation functions used.
+
+    Do not give any code, and do not reply with anything else. Only give feedback.
+    Do not mention training or testing the network.
+    Do not mention any errors.
+    Keep the feedback simple and easy to understand and less than 4 sentences.
+    """
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
     return response.text
+
+def gemini_chatbot(ds_name: str, nn_struct: str, message) -> str:
+    """
+    Method for generating a feedback on a user's neural network
+
+    returns: str
+    A string containing feedback
+    """
+    #print("You are using API key:", os.environ["GEMINI_KEY"])
+    #Make sure to put your Gemini API key in the environment variables
+    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    full_prompt = f"""
+    Please generate feedback on the following neural network for a beginner with programming.
+    The user is training the network on the {ds_name} dataset.
+    Here is a json representation of the neural network:
+    {nn_struct}
+    Make sure to give feedback on the following:
+    - The overall structure of the neural network
+    - The number of layers
+    - The number of neurons in each layer
+    - The activation functions used.
+
+    Do not give any code, and do not reply with anything else. Only give feedback.
+    Do not mention training or testing the network.
+    Do not mention any errors.
+    Keep the feedback simple and easy to understand and less than 4 sentences.
+
+    Here is a conversation with the user:
+    User: {message}
+    """
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
+    )
+    return response.text
+

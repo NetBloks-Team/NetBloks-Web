@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
         separator.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
         layout.addWidget(separator)
 
-        feedback_module = qtWidgets.FeedbackModule()
+        feedback_module = qtWidgets.FeedbackModule(gemini_gen.gemini_fb, gemini_gen.gemini_chatbot, self.code_editor.get_dataset, self.code_editor.get_json_data)
         feedback_module.setMaximumWidth(400)
         feedback_module.setMinimumWidth(400)
 

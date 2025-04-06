@@ -439,9 +439,12 @@ class Console(QWidget):
         self.console_output.setText(text + "\n" + self.console_output.text())
 
 class FeedbackModule(QWidget):
-    def __init__(self, chatbot):
+    def __init__(self, general_feedback=None, chatbot=None, dataset_getter=None, code_getter=None):
         super().__init__()
         self.chatbot = chatbot
+        self.general_feedback = general_feedback
+        self.dataset_getter = dataset_getter
+        self.code_getter = code_getter
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(10)
@@ -451,7 +454,7 @@ class FeedbackModule(QWidget):
         # Chatbot response box
         self.chatbot_output = QLabel()
         self.chatbot_output.setWordWrap(True)
-        self.chatbot_output.setStyleSheet("background-color: #444444; padding: 10px; border-radius: 5px;")
+        self.chatbot_output.setStyleSheet("background-color:rgb(70, 70, 70); padding: 10px; border-radius: 5px;")
         self.chatbot_output.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.chatbot_output.setText("Chatbot responses will appear here.")
         self.layout.addWidget(self.chatbot_output, stretch=1)
@@ -477,11 +480,22 @@ class FeedbackModule(QWidget):
         if message:
             self.chatbot_output.setText(self.chatbot_output.text() + f"\n\nYou: {message}\n\n")
             self.message_input.clear()
+            response = None
+            if self.general_feedback:
+                response = self.chatbot(self.dataset_getter(), self.code_getter(), message)
+            else:
+                response = "No chatbot function provided."
+            self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: {response}")
             # Simulate chatbot response (replace with actual logic)
-            self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: I received your message.")
 
     @pyqtSlot()
     def provide_feedback(self):
         # Placeholder for feedback logic
         self.chatbot_output.setText(self.chatbot_output.text() + "\n\nRequesting feedback from the model...\n\n")
+        response = None
+        if self.general_feedback:
+            response = self.general_feedback(self.dataset_getter(), self.code_getter())
+        else:
+            response = "No feedback function provided."
+        self.chatbot_output.setText(self.chatbot_output.text() + "Feedback:\n"+response)
         
