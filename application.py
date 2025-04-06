@@ -70,7 +70,10 @@ class MainWindow(QMainWindow):
         vertical_separator.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
         mid_layout.addWidget(vertical_separator)
         mid_layout.addWidget(self.code_editor)
-        mid_layout.addWidget(vertical_separator)
+        vertical_separator2 = qtWidgets.QFrame()
+        vertical_separator2.setFrameShape(qtWidgets.QFrame.Shape.VLine)
+        vertical_separator2.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
+        mid_layout.addWidget(vertical_separator2)
         mid_layout.addWidget(feedback_module)
         # Add the code editor with scroll functionality
         layout.addLayout(mid_layout)
