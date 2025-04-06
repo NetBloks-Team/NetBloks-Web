@@ -145,7 +145,6 @@ class WorkspaceSelecter(QWidget):
     def save(self, name=None):
         if self.get_savable is not None:
             data = self.get_savable()
-            print(data)
             # Save the data to a file or database
             if not name:
                 name = self.dropdown.currentText()
@@ -155,7 +154,6 @@ class WorkspaceSelecter(QWidget):
                 json.dump(data, f)
 
     def on_workspace_change(self, index):
-        print(f"Workspace changed to: {self.dropdown.itemText(index)}")
         if self.previous_workspace in [self.dropdown.itemText(i) for i in range(self.dropdown.count())]:
             self.save(self.previous_workspace)
         if self.from_savable is not None:
@@ -191,12 +189,8 @@ class CodeEditor(QWidget):
         self.dataset_dropdown.addItems(datasets)
         self.menu_layout.addWidget(self.dataset_dropdown)
 
-        self.print_button = QPushButton("Print JSON")
-        self.print_button.clicked.connect(lambda: print(self.get_json_data()))
-
         self.menu_layout.addWidget(self.add_block_button)
         self.menu_layout.addWidget(self.add_activation_button)
-        self.menu_layout.addWidget(self.print_button)
         self.menu_layout.addWidget(self.clear_button)
         self.layout.addLayout(self.menu_layout)
 
@@ -268,6 +262,13 @@ class CodeEditor(QWidget):
         
         if self.save:
             self.save()
+        
+    def set_explainer(self, explain_layer):
+        # Set the explain_layer function for each block
+        for i in range(self.blocks_container.count()):
+            block = self.blocks_container.itemAt(i).widget()
+            if block:
+                block.explain_layer = explain_layer
 
     def get_json_data(self):
         # Collect JSON data from all code blocks
@@ -275,11 +276,23 @@ class CodeEditor(QWidget):
         for i in range(self.blocks_container.count()):
             block = self.blocks_container.itemAt(i).widget()
             if block:
-                json_data.append(block.json_data)
+                try:
+                    json_data.append(block.json_data)
+                except Exception as e:
+                    pass
         return json_data
 
     def get_dataset(self):
         return self.dataset_dropdown.currentText()
+
+    def get_explain_buttons(self):
+        # Get the explain buttons from all code blocks
+        explain_buttons = []
+        for i in range(self.blocks_container.count()):
+            block = self.blocks_container.itemAt(i).widget()
+            if block:
+                explain_buttons.append(block.explain_button)
+        return explain_buttons
     
     def get_savable(self):
         # Get the JSON data from all code blocks
@@ -325,6 +338,7 @@ class CodeBlock(QWidget):
     def __init__(self, type, parameters=[], save=None):
         super().__init__()
         self.save = save
+        self.explain_layer = None
         self.json_data = {
             "type": type,
             **{param: "" for param in parameters}
@@ -341,7 +355,13 @@ class CodeBlock(QWidget):
 
         # Add a label at the top with the type
         top_bar = QWidget()
+
+        self.explain_button = QPushButton("?")
+        self.explain_button.setFixedSize(30, 30)
+        self.explain_button.clicked.connect(lambda: self.explain_layer(self.json_data) if self.explain_layer else None)
+
         top_bar_layout = QHBoxLayout()
+        top_bar_layout.addWidget(self.explain_button)
         top_bar_layout.setContentsMargins(0, 0, 0, 0)
 
         self.type_label = QLabel(self.type)
@@ -351,7 +371,7 @@ class CodeBlock(QWidget):
         self.type_label.setFont(font)
 
         delete_button = QPushButton("X")
-        delete_button.setFixedSize(20, 20)
+        delete_button.setFixedSize(30, 30)
         delete_button.clicked.connect(self.deleteLater)
 
         top_bar_layout.addWidget(self.type_label)
@@ -405,7 +425,6 @@ class CodeBlock(QWidget):
     def on_value_change(self, param, value):
         # Update the JSON data with the new value
         self.json_data[param] = value
-        print(f"Updated {param} to {value}")
         if self.save:
             self.save()
     
@@ -461,12 +480,15 @@ class Console(QWidget):
         self.console_output.verticalScrollBar().setValue(self.console_output.verticalScrollBar().maximum())
 
 class FeedbackModule(QWidget):
-    def __init__(self, general_feedback=None, chatbot=None, dataset_getter=None, code_getter=None):
+    def __init__(self, general_feedback=None, chatbot=None, dataset_getter=None, code_getter=None, explain_layer=None, explain_buttons=None):
         super().__init__()
         self.chatbot = chatbot
         self.general_feedback = general_feedback
         self.dataset_getter = dataset_getter
         self.code_getter = code_getter
+        self.explainer = explain_layer
+        self.explain_buttons = explain_buttons
+
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(10)
@@ -510,12 +532,16 @@ class FeedbackModule(QWidget):
                 self.message_input.setDisabled(True)
                 self.send_button.setDisabled(True)
                 self.feedback_button.setDisabled(True)
+                for button in self.explain_buttons:
+                    button.setDisabled(True)
                 def finish():
                     response = self.chatbot(self.dataset_getter(), self.code_getter(), message)
                     self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: {response}")
                     self.message_input.setDisabled(False)
                     self.send_button.setDisabled(False)
                     self.feedback_button.setDisabled(False)
+                    for button in self.explain_buttons:
+                        button.setDisabled(False)
                 thread = threading.Thread(target=finish, daemon=True)
                 thread.start()
             else:
@@ -530,15 +556,52 @@ class FeedbackModule(QWidget):
             self.message_input.setDisabled(True)
             self.send_button.setDisabled(True)
             self.feedback_button.setDisabled(True)
+            for button in self.explain_buttons:
+                    button.setDisabled(True)
             def finish():
                 response = self.general_feedback(self.dataset_getter(), self.code_getter())
                 self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: {response}")
                 self.message_input.setDisabled(False)
                 self.send_button.setDisabled(False)
                 self.feedback_button.setDisabled(False)
+                for button in self.explain_buttons:
+                    button.setDisabled(False)
             thread = threading.Thread(target=finish, daemon=True)
             thread.start()
         else:
             response = "No feedback function provided."
             self.chatbot_output.setText(self.chatbot_output.text() + "Feedback:\n"+response)
+
+    # In the FeedbackModule class, update the explain_layer method:
+
+    @pyqtSlot(dict)
+    def explain_layer(self, layer_data):
+        """Explain a specific layer"""
+        self.chatbot_output.setText(self.chatbot_output.text() + "\n\nExplaining layer...\n\n")
         
+        if self.explain_layer:
+            self.message_input.setDisabled(True)
+            self.send_button.setDisabled(True)
+            self.feedback_button.setDisabled(True)
+            for button in self.explain_buttons:
+                    button.setDisabled(True)
+            
+            def finish():
+                # Get dataset and code data first
+                dataset = self.dataset_getter()
+                nn_struct = self.code_getter()
+                # Now call the explain_layer function with all required arguments
+                response = self.explainer(dataset, nn_struct, layer_data)
+                self.chatbot_output.setText(self.chatbot_output.text() + f"Explanation: {response}")
+                
+                for button in self.explain_buttons:
+                    button.setDisabled(False)
+                self.message_input.setDisabled(False)
+                self.send_button.setDisabled(False)
+                self.feedback_button.setDisabled(False)
+                
+            thread = threading.Thread(target=finish, daemon=True)
+            thread.start()
+        else:
+            response = "No explanation function provided."
+            self.chatbot_output.setText(self.chatbot_output.text() + "Explanation:\n" + response)

@@ -98,3 +98,28 @@ def gemini_chatbot(ds_name: str, nn_struct: str, message) -> str:
     )
     return response.text
 
+def explain_layer(ds_name: str, nn_struct: str, layer) -> str:
+    """
+    Method for generating a feedback on a user's neural network
+
+    returns: str
+    A string containing feedback
+    """
+    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    full_prompt = f"""
+    You previously gave feedback to a user on their neural network for the {ds_name} dataset.
+    Here is the json representation of the neural network:
+    {nn_struct}
+    Please describe layer {layer} in detail. Please include the following:
+    - How it work
+    - What it does
+    - Why it is important
+    - How it relates to the rest of the network
+    - How it relates to the dataset
+
+    Do not give any code or "*"s, and do not reply with anything else. Only give feedback.
+    """
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
+    )
+    return response.text

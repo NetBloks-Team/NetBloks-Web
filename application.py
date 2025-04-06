@@ -2,10 +2,10 @@ import os
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QScrollArea, QHBoxLayout
 import qtWidgets
 import gemini_gen
-from nn_wrapper import run_model
 import threading
 from PyQt6.QtCore import QMetaObject, Qt
 from PyQt6.QtCore import Q_ARG
+from nn_wrapper import run_model
 
 EPOCHS = 8
 
@@ -56,7 +56,11 @@ class MainWindow(QMainWindow):
         separator.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
         layout.addWidget(separator)
 
-        feedback_module = qtWidgets.FeedbackModule(gemini_gen.gemini_fb, gemini_gen.gemini_chatbot, self.code_editor.get_dataset, self.code_editor.get_json_data)
+        feedback_module = qtWidgets.FeedbackModule(gemini_gen.gemini_fb, gemini_gen.gemini_chatbot, 
+                                                   self.code_editor.get_dataset, self.code_editor.get_json_data, 
+                                                   gemini_gen.explain_layer, self.code_editor.get_explain_buttons())
+        
+        self.code_editor.set_explainer(feedback_module.explain_layer)
         feedback_module.setMaximumWidth(400)
         feedback_module.setMinimumWidth(400)
 
@@ -94,6 +98,7 @@ class MainWindow(QMainWindow):
 
         # Run the code in a separate thread
         def finish_run():
+            
             gemini_gen.gemini_gen(ds_name, str(code))
             run_model(ds_name, self.console.add_output, nn_struct=str(code), epochs=EPOCHS)
             self.run_button.setEnabled(True)
