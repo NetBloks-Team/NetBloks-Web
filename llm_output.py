@@ -3,74 +3,30 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
-
-class Flatten(nn.Module):
-    def forward(self, x):
-        return x.view(x.size(0), -1)
+from torch.utils.data import DataLoader
 
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.layers_config = [{'type': 'Conv2d', 'channels': '32', 'kernel_size': '3', 'stride': ''}, {'type': 'ReLU'}, {'type': 'Conv2d', 'channels': '64', 'kernel_size': '3', 'stride': ''}, {'type': 'ReLU'}, {'type': 'MaxPool2d', 'kernel_size': '2', 'stride': ''}, {'type': 'Flatten'}, {'type': 'Dropout', 'p': '0.3'}, {'type': 'Linear', 'out_features': '10'}]
-        self.layers = nn.ModuleList()
-        in_channels = 1
-        for layer_config in self.layers_config:
-            layer_type = layer_config['type']
-            if layer_type == 'Conv2d':
-                channels = int(layer_config['channels'])
-                kernel_size = int(layer_config['kernel_size'])
-                stride = int(layer_config['stride']) if layer_config['stride'] else 1
-                self.layers.append(nn.Conv2d(in_channels, channels, kernel_size, stride=stride))
-                in_channels = channels
-            elif layer_type == 'ReLU':
-                self.layers.append(nn.ReLU())
-            elif layer_type == 'MaxPool2d':
-                kernel_size = int(layer_config['kernel_size'])
-                stride = int(layer_config['stride']) if layer_config['stride'] else kernel_size
-                self.layers.append(nn.MaxPool2d(kernel_size, stride=stride))
-            elif layer_type == 'Flatten':
-                self.layers.append(Flatten())
-            elif layer_type == 'Dropout':
-                p = float(layer_config['p'])
-                self.layers.append(nn.Dropout(p))
-            elif layer_type == 'Linear':
-                out_features = int(layer_config['out_features'])
-                self.layers.append(nn.Linear(self._calculate_linear_input_size(), out_features))
-
-    def _calculate_linear_input_size(self):
-        dummy_input = torch.randn(1, 1, 28, 28)
-        x = dummy_input
-        for layer_config, layer in zip(self.layers_config[:-1], self.layers[:-1]): # Exclude the final Linear layer
-            layer_type = layer_config['type']
-            if layer_type == 'Conv2d':
-                x = layer(x)
-            elif layer_type == 'ReLU':
-                x = layer(x)
-            elif layer_type == 'MaxPool2d':
-                x = layer(x)
-            elif layer_type == 'Flatten':
-                x = layer(x)
-            elif layer_type == 'Dropout':
-                x = layer(x)
-        return x.view(1, -1).size(1)
-
+        self.conv1 = nn.Conv2d(1, 32, 3)
+        self.relu1 = nn.ReLU()
+        self.conv2 = nn.Conv2d(32, 64, 3)
+        self.relu2 = nn.ReLU()
+        self.pool1 = nn.MaxPool2d(2)
+        self.dropout1 = nn.Dropout(0.3)
+        self.fc1 = nn.Linear(9216, 10)
+        self.relu3 = nn.ReLU()
 
     def forward(self, x):
-        for layer_config, layer in zip(self.layers_config, self.layers):
-            layer_type = layer_config['type']
-            if layer_type == 'Conv2d':
-                x = F.relu(layer(x))
-            elif layer_type == 'ReLU':
-                pass # ReLU is applied in Conv2d
-            elif layer_type == 'MaxPool2d':
-                x = layer(x)
-            elif layer_type == 'Flatten':
-                x = layer(x)
-            elif layer_type == 'Dropout':
-                x = layer(x)
-            elif layer_type == 'Linear':
-                x = layer(x)
-        return F.log_softmax(x, dim=1)
+        x = self.relu1(self.conv1(x))
+        x = self.relu2(self.conv2(x))
+        x = self.pool1(x)
+        x = torch.flatten(x, 1)
+        x = self.dropout1(x)
+        x = self.fc1(x)
+        x = self.relu3(x)
+        output = F.log_softmax(x, dim=1) # For NLLLoss
+        return output
 
 def train(model, device, train_loader, optimizer, epoch):
     model.train()
@@ -104,11 +60,11 @@ def test(model, device, test_loader):
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
-def main():
+if __name__ == '__main__':
     # Training settings
     batch_size = 64
     test_batch_size = 1000
-    epochs = 10
+    epochs = 1
     lr = 0.01
     momentum = 0.5
     no_cuda = False
@@ -121,20 +77,25 @@ def main():
 
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-    train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=True, download=True,
-                       transform=transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.1307,), (0.3081,))
-                       ])),
-        batch_size=batch_size, shuffle=True, **kwargs)
-    test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=False, transform=transforms.Compose([
-                           transforms.ToTensor(),
-                           transforms.Normalize((0.1307,), (0.3081,))
-                       ])),
-        batch_size=test_batch_size, shuffle=True, **kwargs)
+    train_kwargs = {'batch_size': batch_size}
+    test_kwargs = {'batch_size': test_batch_size}
+    if use_cuda:
+        cuda_kwargs = {'num_workers': 1,
+                       'pin_memory': True,
+                       'shuffle': True}
+        train_kwargs.update(cuda_kwargs)
+        test_kwargs.update(cuda_kwargs)
+
+    transform=transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,))
+    ])
+    dataset1 = datasets.MNIST('../data', train=True, download=True,
+                       transform=transform)
+    dataset2 = datasets.MNIST('../data', train=False,
+                       transform=transform)
+    train_loader = DataLoader(dataset1,**train_kwargs)
+    test_loader = DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum)
@@ -143,8 +104,7 @@ def main():
         train(model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
 
-    torch.save(model.state_dict(), "mnist_cnn.pt")
-
-
-if __name__ == '__main__':
-    main()
+    # Example of saving and loading the model (optional)
+    # torch.save(model.state_dict(), "mnist_cnn.pt")
+    # model = Net().to(device)
+    # model.load_state_dict(torch.load("mnist_cnn.pt"))

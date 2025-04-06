@@ -418,9 +418,69 @@ class Console(QWidget):
         self.console_output.setWordWrap(True)
         self.console_output.setStyleSheet("background-color: #444444; padding: 10px; border-radius: 5px;")
         self.layout.addWidget(self.console_output, stretch=1)
-        self.add_output("\n")
+        self.add_output("\nConsole output will appear here. For more information, check the terminal.")
+        self.console_output.setAlignment(Qt.AlignmentFlag.AlignTop)
+
 
     @pyqtSlot(str)
     def add_output(self, text):
+        max_length = 25
         print(text)
-        self.console_output.setText(self.console_output.text() + "\n" + text)        
+        text = text.split(" ")
+        wrapped_text = ""
+        for word in text:
+            if len(wrapped_text.split("\n")[-1]) + len(word) + 1 > max_length:
+                if len(word) > max_length:
+                    wrapped_text += "\n" + word[:max_length-1] + "-\n" + word[max_length-1:]
+                wrapped_text += "\n" + word
+            else:
+                wrapped_text += " " + word
+
+        text = wrapped_text.strip()
+        self.console_output.setText(text + "\n" + self.console_output.text())
+
+class FeedbackModule(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(10)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.setLayout(self.layout)
+
+        # Chatbot response box
+        self.chatbot_output = QLabel()
+        self.chatbot_output.setWordWrap(True)
+        self.chatbot_output.setStyleSheet("background-color: #444444; padding: 10px; border-radius: 5px;")
+        self.chatbot_output.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.chatbot_output.setText("Chatbot responses will appear here.")
+        self.layout.addWidget(self.chatbot_output, stretch=1)
+
+        # Input field and send button
+        input_layout = QHBoxLayout()
+        self.message_input = QLineEdit()
+        self.message_input.setPlaceholderText("Type your message here...")
+        self.send_button = QPushButton("Send")
+        self.send_button.clicked.connect(self.send_message)
+        input_layout.addWidget(self.message_input)
+        input_layout.addWidget(self.send_button)
+        self.layout.addLayout(input_layout)
+
+        # General feedback button
+        self.feedback_button = QPushButton("Provide Feedback on Model")
+        self.feedback_button.clicked.connect(self.provide_feedback)
+        self.layout.addWidget(self.feedback_button)
+
+    @pyqtSlot()
+    def send_message(self):
+        message = self.message_input.text().strip()
+        if message:
+            self.chatbot_output.setText(f"You: {message}\n" + self.chatbot_output.text())
+            self.message_input.clear()
+            # Simulate chatbot response (replace with actual logic)
+            self.chatbot_output.setText(f"Chatbot: I received your message.\n" + self.chatbot_output.text())
+
+    @pyqtSlot()
+    def provide_feedback(self):
+        # Placeholder for feedback logic
+        self.chatbot_output.setText("Feedback: Thank you for your input!\n" + self.chatbot_output.text())
