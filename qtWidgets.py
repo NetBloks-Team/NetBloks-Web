@@ -6,7 +6,7 @@ from PyQt6.QtGui import QPainter, QColor
 import os
 import threading
 
-datasets = ["MNIST", "CIFAR 10", "CIFAR 100", "KMNIST", "EMNIST", "SVHN"]
+datasets = ["MNIST", "CIFAR 10", "CIFAR 100", "KMNIST", "SVHN"]
 
 layers = {
     "Conv2d": ["channels","kernel_size", "stride"],
