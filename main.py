@@ -8,7 +8,7 @@ Python version: 3.13
 #-----Import Section-----
 
 import qtWidgets
-from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 import application
 
 #-----Function Section-----

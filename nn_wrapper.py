@@ -7,7 +7,7 @@ from llm_output import Net
 
 EPOCHS = 8
 
-def run_model(ds_name: str) -> float:
+def run_model(ds_name: str, printer = None) -> float:
     if ds_name == "MNIST":
         train_ds = datasets.MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         test_ds = datasets.MNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)
@@ -17,13 +17,12 @@ def run_model(ds_name: str) -> float:
     elif ds_name == "CIFAR 100":
         train_ds = datasets.CIFAR100(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         test_ds = datasets.CIFAR100(root='./data', train=False, transform=transforms.ToTensor(), download=True)
-    print("Train set size:", train_ds.data.shape) # Send this info to the user terminal
-    print("Test set size:", test_ds.data.shape)
+    else:
+        raise ValueError(f"Unknown dataset: {ds_name}")
+    printer(f"Training on {train_ds.data.shape[0]} data points.") # Send this info to the user terminal
+    printer(f"Testing on {test_ds.data.shape[0]} data points.")
     train_loader = DataLoader(
         train_ds, batch_size=64, shuffle=True, drop_last=True
-    )
-    test_loader = DataLoader(
-        test_ds, batch_size=64, shuffle=False, drop_last=True
     )
 
     net = Net()
@@ -46,13 +45,12 @@ def run_model(ds_name: str) -> float:
             optimizer.step()
             # record loss
             running_loss += loss.item()
-        print("Epoch:", i, "of", EPOCHS, "   loss:", running_loss / n_total_steps)
+        printer("Training cycle:", i, "of", EPOCHS, "   loss:", running_loss / n_total_steps, " (lower loss means your model is performing better)")
 
-    print("Done with ANN fitting.")
+    printer("Network training done!")
 
     X_test = torch.reshape(test_ds.data.float(), (-1, 1, 28, 28))
     y_test = test_ds.targets
-    print(X_test.shape)
     with torch.no_grad():
         y_pred = net.forward(X_test)
     accuracy = 0
@@ -60,7 +58,7 @@ def run_model(ds_name: str) -> float:
         if y_pred[i] == y_test[i]:
             accuracy += 1
     accuracy = accuracy / len(y_pred)
-    return accuracy
+    printer(f"Your model performed with an accuracy of: {accuracy}%")
 
     # confusion_mtx = confusion_matrix(y_test, y_pred)
     # hmap = sns.heatmap(
