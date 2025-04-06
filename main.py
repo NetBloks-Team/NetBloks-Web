@@ -35,7 +35,7 @@ def main():
     app = QApplication([])
     window = application.MainWindow()
     window.show()
-    app.exec()    
+    app.exec()
 
 if __name__ == "__main__":
     main()
