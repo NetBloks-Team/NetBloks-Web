@@ -67,5 +67,9 @@ class MainWindow(QMainWindow):
         ds_name = self.code_editor.get_dataset()
         
         # Run the code in the selected workspace
-        gemini_gen.gemini_gen(ds_name, str(code))
+        nn_code = gemini_gen.gemini_gen(ds_name, str(code))
+        with open("llm_output.py", "w") as f:
+            f.write(nn_code)
+        print(ds_name)
+        # Execute the generated code
         run_model(ds_name, self.console.add_output)
