@@ -3,7 +3,9 @@ from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QScr
 import qtWidgets
 import gemini_gen
 from nn_wrapper import run_model
-import multiprocessing
+import threading
+from PyQt6.QtCore import QMetaObject, Qt
+from PyQt6.QtCore import Q_ARG
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -61,18 +63,16 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def on_run(self):
-        # Get the selected workspace
-        
         # Get the code from the code editor
         code = self.code_editor.get_json_data()
         ds_name = self.code_editor.get_dataset()
-        
-        # Run the code in the selected workspace
+
+        # Run the code in a separate thread
         def finish_run():
             gemini_gen.gemini_gen(ds_name, str(code))
             run_model(ds_name, self.console.add_output)
-        
-        # Create a new process to run the code
-        process = multiprocessing.Process(target=finish_run, daemon=True)
-        process.start()
+
+        # Create a new thread to run the code
+        thread = threading.Thread(target=finish_run, daemon=True)
+        thread.start()
         

@@ -1,7 +1,7 @@
 import json
 from PyQt6.QtWidgets import QApplication, QMainWindow, QComboBox, QVBoxLayout, QWidget, QPushButton, QInputDialog, QLineEdit, QScrollArea, QHBoxLayout, QSizePolicy
 from PyQt6.QtWidgets import QLabel, QFrame
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QPainter
 import os
 
@@ -420,7 +420,7 @@ class Console(QWidget):
         self.layout.addWidget(self.console_output, stretch=1)
         self.add_output("\n")
 
-
+    @pyqtSlot(str)
     def add_output(self, text):
         print(text)
-        self.console_output.setText(self.console_output.text() + "\n" + text)
+        self.console_output.setText(self.console_output.text() + "\n" + text)        
