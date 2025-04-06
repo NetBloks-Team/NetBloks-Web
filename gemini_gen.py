@@ -21,7 +21,10 @@ def gemini_gen(ds_name: str, nn_struct: str, error_msg:str = None) -> str:
     """
     #print("You are using API key:", os.environ["GEMINI_KEY"])
     #Make sure to put your Gemini API key in the environment variables
-    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    except KeyError:
+        return "Gemini API key not found. Please set the GEMINI_KEY environment variable."
     full_prompt = f"""
     Please generate python code for a pytorch neural network that has the following parameters:
     {nn_struct}
@@ -52,7 +55,10 @@ def gemini_fb(ds_name: str, nn_struct: str) -> str:
 
     #print("You are using API key:", os.environ["GEMINI_KEY"])
     #Make sure to put your Gemini API key in the environment variables
-    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    except KeyError:
+        return "Gemini API key not found. Please set the GEMINI_KEY environment variable."
     full_prompt = f"""
     Please generate feedback on the following neural network for a beginner with programming.
     The user is training the network on the {ds_name} dataset.
@@ -84,7 +90,10 @@ def gemini_chatbot(ds_name: str, nn_struct: str, message) -> str:
     """
     #print("You are using API key:", os.environ["GEMINI_KEY"])
     #Make sure to put your Gemini API key in the environment variables
-    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    except KeyError:
+        return "Gemini API key not found. Please set the GEMINI_KEY environment variable."
     full_prompt = f"""
     You previously gave feedback to a user on their neural network for the {ds_name} dataset.
     Here is the json representation of the neural network:
@@ -105,7 +114,10 @@ def explain_layer(ds_name: str, nn_struct: str, layer) -> str:
     returns: str
     A string containing feedback
     """
-    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    except KeyError:
+        return "Gemini API key not found. Please set the GEMINI_KEY environment variable."
     full_prompt = f"""
     You previously gave feedback to a user on their neural network for the {ds_name} dataset.
     Here is the json representation of the neural network:
@@ -131,7 +143,10 @@ def explain_error(ds_name: str, nn_struct: str, error_msg:str) -> str:
     returns: str
     A string containing feedback
     """
-    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    except KeyError:
+        return "Gemini API key not found. Please set the GEMINI_KEY environment variable."
     full_prompt = f"""
     You previously gave feedback to a user on their neural network for the {ds_name} dataset.
     Here is the json representation of the neural network:
@@ -154,7 +169,10 @@ def getting_started(database, layers, activations) -> str:
     returns: str
     A string containing feedback
     """
-    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    try:
+        client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    except KeyError:
+        return "Gemini API key not found. Please set the GEMINI_KEY environment variable."
     full_prompt = f"""
     Please explain how to get started with the {database} dataset.
     Include the following:

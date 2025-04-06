@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
 
         feedback_module = qtWidgets.FeedbackModule(gemini_gen.gemini_fb, gemini_gen.gemini_chatbot, gemini_gen.getting_started,
                                                    self.code_editor.get_dataset, self.code_editor.get_json_data, 
-                                                   gemini_gen.explain_layer, self.code_editor.get_explain_buttons())
+                                                   gemini_gen.explain_layer, self.code_editor.get_explain_buttons)
         
         self.code_editor.set_explainer(feedback_module.explain_layer)
         feedback_module.setMaximumWidth(400)

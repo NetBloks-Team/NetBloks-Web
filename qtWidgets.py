@@ -550,7 +550,7 @@ class FeedbackModule(QWidget):
                 self.feedback_button.setDisabled(True)
                 self.getting_started_button.setDisabled(True)
                 
-                for button in self.explain_buttons:
+                for button in self.explain_buttons():
                     button.setDisabled(True)
                 def finish():
                     response = self.chatbot(self.dataset_getter(), self.code_getter(), message)
@@ -559,7 +559,7 @@ class FeedbackModule(QWidget):
                     self.send_button.setDisabled(False)
                     self.feedback_button.setDisabled(False)
                     self.getting_started_button.setDisabled(False)
-                    for button in self.explain_buttons:
+                    for button in self.explain_buttons():
                         button.setDisabled(False)
                 thread = threading.Thread(target=finish, daemon=True)
                 thread.start()
@@ -577,7 +577,7 @@ class FeedbackModule(QWidget):
             self.feedback_button.setDisabled(True)
             self.getting_started_button.setDisabled(True)
 
-            for button in self.explain_buttons:
+            for button in self.explain_buttons():
                     button.setDisabled(True)
             def finish():
                 response = self.general_feedback(self.dataset_getter(), self.code_getter())
@@ -586,7 +586,7 @@ class FeedbackModule(QWidget):
                 self.send_button.setDisabled(False)
                 self.feedback_button.setDisabled(False)
                 self.getting_started_button.setDisabled(False)
-                for button in self.explain_buttons:
+                for button in self.explain_buttons():
                     button.setDisabled(False)
             thread = threading.Thread(target=finish, daemon=True)
             thread.start()
@@ -604,7 +604,7 @@ class FeedbackModule(QWidget):
             self.feedback_button.setDisabled(True)
             self.getting_started_button.setDisabled(True)
 
-            for button in self.explain_buttons:
+            for button in self.explain_buttons():
                     button.setDisabled(True)
             def finish():
                 response = self.starter(self.dataset_getter(), layers, activations)
@@ -613,7 +613,7 @@ class FeedbackModule(QWidget):
                 self.send_button.setDisabled(False)
                 self.feedback_button.setDisabled(False)
                 self.getting_started_button.setDisabled(False)
-                for button in self.explain_buttons:
+                for button in self.explain_buttons():
                     button.setDisabled(False)
             thread = threading.Thread(target=finish, daemon=True)
             thread.start()
@@ -633,7 +633,7 @@ class FeedbackModule(QWidget):
             self.send_button.setDisabled(True)
             self.feedback_button.setDisabled(True)
             self.getting_started_button.setDisabled(True)
-            for button in self.explain_buttons:
+            for button in self.explain_buttons():
                     button.setDisabled(True)
             
             def finish():
@@ -644,7 +644,7 @@ class FeedbackModule(QWidget):
                 response = self.explainer(dataset, nn_struct, layer_data)
                 self.chatbot_output.setText(self.chatbot_output.text() + f"Explanation: {response}")
                 
-                for button in self.explain_buttons:
+                for button in self.explain_buttons():
                     button.setDisabled(False)
                 self.message_input.setDisabled(False)
                 self.send_button.setDisabled(False)
