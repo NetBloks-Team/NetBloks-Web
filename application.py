@@ -4,7 +4,7 @@ import qtWidgets
 import gemini_gen
 import threading
 
-EPOCHS = 3
+EPOCHS = 8
 
 class MainWindow(QMainWindow):
     def __init__(self):
