@@ -1,4 +1,4 @@
-<h3>UNR Hackathon project - 2025 AI Division Winner</h3>h3>
+<h3>UNR Hackathon project - 2025 AI Division Winner</h3>
 <h4>By Max Clemetsen and Kevin Pettibone</h4>
 
 An AI app that generates and runs a neural network from a block code design.
