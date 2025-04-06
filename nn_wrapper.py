@@ -45,7 +45,7 @@ def run_model(ds_name: str, printer = None) -> float:
             optimizer.step()
             # record loss
             running_loss += loss.item()
-        printer(f"Training cycle: {i} of {EPOCHS}, your current loss is: {running_loss / n_total_steps} (lower loss means your model is performing better)")
+        printer(f"Training cycle: {i} of {EPOCHS}. Your current loss is {running_loss / n_total_steps}.\nLower loss means your model is performing better.")
 
     printer("Network training done!")
 
@@ -65,3 +65,7 @@ def run_model(ds_name: str, printer = None) -> float:
     #    confusion_mtx, annot=True, fmt="g"
     # )  # Create the data visualization
     # plt.show()
+
+if __name__ == "__main__":
+    # Example usage
+    run_model("MNIST", printer=print)
