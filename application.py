@@ -11,7 +11,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.thread = None
 
-        self.setWindowTitle("AI Project")
+        self.setWindowTitle("NetBloks")
         # Set the geometry to the size of the screen
         screen_geometry = self.screen().availableGeometry()
         screen_geometry.setWidth(int(screen_geometry.width() * 0.75))
