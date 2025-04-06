@@ -8,25 +8,25 @@ from torch.utils.data import DataLoader
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, 3)
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3)
         self.relu1 = nn.ReLU()
-        self.conv2 = nn.Conv2d(32, 64, 3)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
         self.relu2 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(2)
-        self.dropout1 = nn.Dropout(0.3)
-        self.fc1 = nn.Linear(9216, 10)
-        self.relu3 = nn.ReLU()
+        self.maxpool = nn.MaxPool2d(kernel_size=2)
+        self.flatten = nn.Flatten()
+        self.dropout = nn.Dropout(p=0.3)
+        self.fc = nn.Linear(64 * 5 * 5, 10) # Adjusted input size after conv and pool
 
     def forward(self, x):
-        x = self.relu1(self.conv1(x))
-        x = self.relu2(self.conv2(x))
-        x = self.pool1(x)
-        x = torch.flatten(x, 1)
-        x = self.dropout1(x)
-        x = self.fc1(x)
-        x = self.relu3(x)
-        output = F.log_softmax(x, dim=1) # For NLLLoss
-        return output
+        x = self.conv1(x)
+        x = self.relu1(x)
+        x = self.conv2(x)
+        x = self.relu2(x)
+        x = self.maxpool(x)
+        x = self.flatten(x)
+        x = self.dropout(x)
+        x = self.fc(x)
+        return x
 
 def train(model, device, train_loader, optimizer, epoch):
     model.train()
@@ -60,41 +60,29 @@ def test(model, device, test_loader):
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
-if __name__ == '__main__':
+def main():
     # Training settings
     batch_size = 64
     test_batch_size = 1000
-    epochs = 1
+    epochs = 10
     lr = 0.01
     gamma = 0.7
     use_cuda = torch.cuda.is_available()
     seed = 1
-    log_interval = 10
-    save_model = False
-
     torch.manual_seed(seed)
-
     device = torch.device("cuda" if use_cuda else "cpu")
-
-    train_kwargs = {'batch_size': batch_size}
-    test_kwargs = {'batch_size': test_batch_size}
-    if use_cuda:
-        cuda_kwargs = {'num_workers': 1,
-                       'pin_memory': True,
-                       'shuffle': True}
-        train_kwargs.update(cuda_kwargs)
-        test_kwargs.update(cuda_kwargs)
+    kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
     transform=transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
-    ])
-    dataset1 = datasets.MNIST('../data', train=True, download=True,
+        ])
+    train_dataset = datasets.MNIST('../data', train=True, download=True,
                        transform=transform)
-    dataset2 = datasets.MNIST('../data', train=False,
+    test_dataset = datasets.MNIST('../data', train=False,
                        transform=transform)
-    train_loader = DataLoader(dataset1,**train_kwargs)
-    test_loader = DataLoader(dataset2, **test_kwargs)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, **kwargs)
+    test_loader = DataLoader(test_dataset, batch_size=test_batch_size, shuffle=False, **kwargs)
 
     model = Net().to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -103,7 +91,7 @@ if __name__ == '__main__':
         train(model, device, train_loader, optimizer, epoch)
         test(model, device, test_loader)
 
-    # Example of saving and loading the model (optional)
-    # torch.save(model.state_dict(), "mnist_cnn.pt")
-    # model = Net().to(device)
-    # model.load_state_dict(torch.load("mnist_cnn.pt"))
+    torch.save(model.state_dict(), "mnist_cnn.pt")
+
+if __name__ == '__main__':
+    main()

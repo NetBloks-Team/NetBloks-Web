@@ -50,7 +50,7 @@ def run_model(ds_name: str, printer = None) -> float:
             # record loss
             running_loss += loss.item()
         model_loss = running_loss / n_total_steps
-        printer(f"Training cycle: {i} of {EPOCHS}. Your current loss is {model_loss}.\nLower loss means your model is performing better.")
+        printer(f"Training cycle: {i} of {EPOCHS}. Your current loss is {model_loss}.")
         if prev_model_loss is not None:
             if model_loss < prev_model_loss and not low_flag:
                 printer("Your model loss has decreased. This means your model is performing well.")
