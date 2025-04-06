@@ -81,9 +81,14 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int =
     printer("Network training done!")
 
     printer(f"Testing on {test_ds.data.shape[0]} data points.")
-
-    X_test = torch.reshape(test_ds.data.float(), (-1, 1, 28, 28))
-    y_test = test_ds.targets
+    try:
+        if ds_name == "MNIST" or "KMNIST":
+            X_test = torch.reshape(test_ds.data.float(), (-1, 1, 28, 28))
+        elif ds_name == "CIFAR 10" or "CIFAR 100":
+            X_test = torch.reshape(float(test_ds.data), (-1, 3, 32, 32))
+    except Exception as e:
+        printer(f"An error occurred while reshaping the test data: {e}")
+        raise e
     with torch.no_grad():
         y_pred = net.forward(X_test)
     accuracy = 0

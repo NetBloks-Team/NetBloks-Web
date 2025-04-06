@@ -1,91 +1,86 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
+import torch.optim as optim
 
 class Net(nn.Module):
     def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(3, 6, 3)
-        self.relu1 = nn.ReLU()
-        self.pool1 = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 3)
-        self.relu2 = nn.ReLU()
-        self.pool2 = nn.MaxPool2d(2, 2)
-        self.dropout1 = nn.Dropout(0.25)
-        self.fc1 = nn.Linear(16 * 6 * 6, 84)
-        self.relu3 = nn.ReLU()
-        self.fc2 = nn.Linear(84, 100) # Changed to 100 for CIFAR100
+        super(Net, self).__init__()
+        self.layers = nn.ModuleList()
+        layer_config = [{'type': 'Conv2d', 'out_channels': '16', 'kernel_size': '3', 'stride': ''}, {'type': 'ReLU'}, {'type': 'MaxPool2d', 'kernel_size': '2', 'stride': ''}, {'type': 'Conv2d', 'out_channels': '64', 'kernel_size': '3', 'stride': ''}, {'type': 'ReLU'}, {'type': 'MaxPool2d', 'kernel_size': '2', 'stride': ''}, {'type': 'Dropout', 'p': '0.25'}, {'type': 'Linear', 'out_features': '840'}, {'type': 'ReLU'}, {'type': 'Linear', 'out_features': '100'}]
+        in_channels = 1
+        for layer_param in layer_config:
+            layer_type = layer_param['type']
+            if layer_type == 'Conv2d':
+                out_channels = int(layer_param['out_channels'])
+                kernel_size = int(layer_param['kernel_size'])
+                stride = int(layer_param['stride']) if layer_param['stride'] != '' else 1
+                self.layers.append(nn.Conv2d(in_channels, out_channels, kernel_size, stride=stride))
+                in_channels = out_channels
+            elif layer_type == 'ReLU':
+                self.layers.append(nn.ReLU())
+            elif layer_type == 'MaxPool2d':
+                kernel_size = int(layer_param['kernel_size'])
+                stride = int(layer_param['stride']) if layer_param['stride'] != '' else None
+                self.layers.append(nn.MaxPool2d(kernel_size, stride=stride))
+            elif layer_type == 'Dropout':
+                p = float(layer_param['p'])
+                self.layers.append(nn.Dropout(p))
+            elif layer_type == 'Linear':
+                out_features = int(layer_param['out_features'])
+                if layer_param == layer_config[7]:
+                    self.layers.append(nn.Linear(64 * 5 * 5, out_features))
+                else:
+                    prev_layer_out_features = int(layer_config[layer_config.index(layer_param)-2]['out_features'])
+                    self.layers.append(nn.Linear(prev_layer_out_features, out_features))
+        self.flatten = nn.Flatten()
 
     def forward(self, x):
-        x = self.pool1(self.relu1(self.conv1(x)))
-        x = self.pool2(self.relu2(self.conv2(x)))
-        x = self.dropout1(x)
-        x = torch.flatten(x, 1) # flatten all dimensions except batch
-        x = self.relu3(self.fc1(x))
-        x = self.fc2(x)
+        for layer in self.layers[:7]:
+            x = layer(x)
+        x = self.flatten(x)
+        for layer in self.layers[7:]:
+            x = layer(x)
         return x
 
-if __name__ == '__main__':
-    transform = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
+])
 
-    batch_size = 4
+train_dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+test_dataset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
 
-    trainset = torchvision.datasets.CIFAR100(root='./data', train=True,
-                                            download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                              shuffle=True, num_workers=2)
+train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=64, shuffle=True)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1000, shuffle=False)
 
-    testset = torchvision.datasets.CIFAR100(root='./data', train=False,
-                                           download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                             shuffle=False, num_workers=2)
+model = Net()
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.Adam(model.parameters())
 
-    classes = tuple(trainset.classes)
+epochs = 2
+for epoch in range(epochs):
+    model.train()
+    for batch_idx, (data, target) in enumerate(train_loader):
+        optimizer.zero_grad()
+        output = model(data)
+        loss = criterion(output, target)
+        loss.backward()
+        optimizer.step()
+        if batch_idx % 100 == 0:
+            print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}')
 
-    net = Net()
-
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-
-    for epoch in range(2):  # loop over the dataset multiple times
-
-        running_loss = 0.0
-        for i, data in enumerate(trainloader, 0):
-            inputs, labels = data
-
-            optimizer.zero_grad()
-
-            outputs = net(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
-            optimizer.step()
-
-            running_loss += loss.item()
-            if i % 2000 == 1999:    # print every 2000 mini-batches
-                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
-                running_loss = 0.0
-
-    print('Finished Training')
-
-    PATH = './cifar100_net.pth'
-    torch.save(net.state_dict(), PATH)
-
-    net = Net()
-    net.load_state_dict(torch.load(PATH))
-
+    model.eval()
+    test_loss = 0
     correct = 0
-    total = 0
     with torch.no_grad():
-        for data in testloader:
-            images, labels = data
-            outputs = net(images)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+        for data, target in test_loader:
+            output = model(data)
+            test_loss += criterion(output, target).item()
+            pred = output.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
 
-    print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+    test_loss /= len(test_loader)
+    print(f'\nTest set: Average loss: {test_loss:.4f}, Accuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n')
