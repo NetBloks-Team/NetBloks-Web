@@ -4,6 +4,7 @@ import torch
 from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+from torchtext import datasets as tdatasets
 import llm_output
 import gemini_gen
 
@@ -24,6 +25,9 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int =
     elif ds_name == "SVHN":
         train_ds = datasets.SVHN(root='./data', split='train', transform=transforms.ToTensor(), download=True)
         test_ds = datasets.SVHN(root='./data', split='test', transform=transforms.ToTensor(), download=True)
+    elif ds_name == "IMDB":
+        train_ds = tdatasets.IMDB(root='./data', split='train', transform=transforms.ToTensor())
+        test_ds = tdatasets.IMDB(root='./data', split='test', transform=transforms.ToTensor())
     else:
         raise ValueError(f"Unknown dataset: {ds_name}")
     printer(f"Training on {train_ds.data.shape[0]} data points.")
