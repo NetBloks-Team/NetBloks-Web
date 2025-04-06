@@ -18,6 +18,12 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int =
     elif ds_name == "CIFAR 100":
         train_ds = datasets.CIFAR100(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         test_ds = datasets.CIFAR100(root='./data', train=False, transform=transforms.ToTensor(), download=True)
+    elif ds_name == "KMNIST":
+        train_ds = datasets.KMNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
+        test_ds = datasets.KMNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)
+    elif ds_name == "SVHN":
+        train_ds = datasets.SVHN(root='./data', split='train', transform=transforms.ToTensor(), download=True)
+        test_ds = datasets.SVHN(root='./data', split='test', transform=transforms.ToTensor(), download=True)
     else:
         raise ValueError(f"Unknown dataset: {ds_name}")
     printer(f"Training on {train_ds.data.shape[0]} data points.")
