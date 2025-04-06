@@ -4,13 +4,10 @@ import torch
 from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from llm_output import Net
+import llm_output
 import gemini_gen
 
-
-EPOCHS = 8
-
-def run_model(ds_name: str, printer = None, nn_struct: str = None) -> float:
+def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int = 8) -> float:
     printer("Loading dataset...")
     if ds_name == "MNIST":
         train_ds = datasets.MNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
@@ -28,7 +25,7 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None) -> float:
         train_ds, batch_size=64, shuffle=True, drop_last=True
     )
 
-    net = Net()
+    net = llm_output.Net()
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=0.01)
     n_total_steps = len(train_loader)
@@ -37,7 +34,7 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None) -> float:
     low_flag = False
     high_flag = False
 
-    for i in range(EPOCHS):
+    for i in range(epochs):
         # train
         running_loss = 0.0  # this keeps track of the loss per epoch
         # print("Epoch:", i, "start...")
@@ -49,8 +46,8 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None) -> float:
             except Exception as e:
                 gemini_gen.gemini_gen(ds_name, nn_struct, str(e))
                 printer(f"An error occurred in the original neural network, regenerating")
-                importlib.reload(llm_output.Net)
-                net = Net()
+                importlib.reload(llm_output)
+                net = llm_output.Net()
                 try:
                     y_pred = net.forward(X_train)
                 except Exception as e:
@@ -65,7 +62,7 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None) -> float:
             # record loss
             running_loss += loss.item()
         model_loss = running_loss / n_total_steps
-        printer(f"Training cycle: {i} of {EPOCHS}. Your current loss is {model_loss}.")
+        printer(f"Training cycle: {i+1} of {epochs}. Your current loss is {model_loss}.")
         if prev_model_loss is not None:
             if model_loss < prev_model_loss and not low_flag:
                 printer("Your model loss has decreased. This means your model is performing well.")
@@ -85,11 +82,12 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None) -> float:
         y_pred = net.forward(X_test)
     accuracy = 0
     for i in range (len(y_pred)):
-        print(y_pred[i])
-        if y_pred[i] == y_test[i]:
+        print(torch.argmax(y_pred[i]))
+        print(y_test[i])
+        if torch.argmax(y_pred[i]) == y_test[i]:
             accuracy += 1
     accuracy = accuracy / len(y_pred)
-    printer(f"Your model performed with an accuracy of: {accuracy}%")
+    printer(f"Your model performed with an accuracy of: {accuracy*100}%")
 
     # confusion_mtx = confusion_matrix(y_test, y_pred)
     # hmap = sns.heatmap(
