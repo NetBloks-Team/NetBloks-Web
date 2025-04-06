@@ -73,7 +73,7 @@ def gemini_fb(ds_name: str, nn_struct: str) -> str:
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
-    return response.text
+    return response.text.replace("*", "")
 
 def gemini_chatbot(ds_name: str, nn_struct: str, message) -> str:
     """
@@ -96,7 +96,7 @@ def gemini_chatbot(ds_name: str, nn_struct: str, message) -> str:
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
-    return response.text
+    return response.text.replace("*", "")
 
 def explain_layer(ds_name: str, nn_struct: str, layer) -> str:
     """
@@ -122,7 +122,7 @@ def explain_layer(ds_name: str, nn_struct: str, layer) -> str:
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
-    return response.text
+    return response.text.replace("*", "")
 
 def explain_error(ds_name: str, nn_struct: str, error_msg:str) -> str:
     """
@@ -145,4 +145,30 @@ def explain_error(ds_name: str, nn_struct: str, error_msg:str) -> str:
     response = client.models.generate_content(
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
-    return response.text
+    return response.text.replace("*", "")
+
+def getting_started(database, layers, activations) -> str:
+    """
+    Method for generating a getting started guide for the user
+
+    returns: str
+    A string containing feedback
+    """
+    client = genai.Client(api_key=os.environ["GEMINI_KEY"])
+    full_prompt = f"""
+    Please explain how to get started with the {database} dataset.
+    Include the following:
+    - What layers to use, and why
+    - What activation functions to use, and why
+    - How the layers relate to the dataset
+    - Sizes of the layers. The layers and their parameters are:
+    {layers}
+    The activation functions are:
+    {activations}
+
+    Do not give any code or "*"s, and do not reply with anything else. Only give feedback, and keep it somewhat short.
+    """
+    response = client.models.generate_content(
+        model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
+    )
+    return response.text.replace("*", "")

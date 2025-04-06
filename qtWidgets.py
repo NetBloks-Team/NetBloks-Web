@@ -187,6 +187,11 @@ class CodeEditor(QWidget):
         self.clear_button = QPushButton("Clear")
         self.clear_button.clicked.connect(self.clear)
         
+        # Add a label for the dataset dropdown with a fixed size
+        self.dataset_label = QLabel("Dataset:")
+        self.dataset_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
+        self.menu_layout.addWidget(self.dataset_label)
+
         # Create a dropdown for selecting datasets
         self.dataset_dropdown = QComboBox()
         self.dataset_dropdown.addItems(datasets)
@@ -364,7 +369,6 @@ class CodeBlock(QWidget):
         self.explain_button.clicked.connect(lambda: self.explain_layer(self.json_data) if self.explain_layer else None)
 
         top_bar_layout = QHBoxLayout()
-        top_bar_layout.addWidget(self.explain_button)
         top_bar_layout.setContentsMargins(0, 0, 0, 0)
 
         self.type_label = QLabel(self.type)
@@ -379,18 +383,18 @@ class CodeBlock(QWidget):
 
         top_bar_layout.addWidget(self.type_label)
         top_bar_layout.addStretch()
+        top_bar_layout.addWidget(self.explain_button)
         top_bar_layout.addWidget(delete_button)
 
         top_bar.setLayout(top_bar_layout)
         self.layout.addWidget(top_bar)
         self.type_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.type_label)
 
         if parameters:
             # Add a horizontal line below the label
             self.horizontal_line = QFrame()
             self.horizontal_line.setFrameShape(QFrame.Shape.HLine)
-            self.horizontal_line.setStyleSheet("background-color: black; border-color: black;")
+            self.horizontal_line.setStyleSheet("background-color: black; border: none;")
             self.layout.addWidget(self.horizontal_line)
 
         # Add text entry boxes for each parameter
@@ -438,7 +442,6 @@ class CodeBlock(QWidget):
                 painter.setBrush(LAYER_BLOCK_COLOR)
             else:
                 painter.setBrush(ACTIVATION_BLOCK_COLOR)
-            # painter.setBrush(QColor(70, 70, 70))  # Custom RGB color
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(self.rect(), 10, 10)
 
@@ -465,12 +468,13 @@ class Console(QWidget):
         self.console_content.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.console_output.setWidget(self.console_content)
         self.layout.addWidget(self.console_output, stretch=1)
-        self.add_output("\nConsole output will appear here. For more information, check the terminal.")
+        self.add_output("Console output will appear here. For more information, check the terminal.")
         self.console_output.setAlignment(Qt.AlignmentFlag.AlignTop)
 
 
     @pyqtSlot(str)
     def add_output(self, text):
+        self.console_output.verticalScrollBar().setValue(self.console_output.verticalScrollBar().maximum())
         max_length = 40
         text = text.split(" ")
         wrapped_text = ""
@@ -487,7 +491,7 @@ class Console(QWidget):
         self.console_output.verticalScrollBar().setValue(self.console_output.verticalScrollBar().maximum())
 
 class FeedbackModule(QWidget):
-    def __init__(self, general_feedback=None, chatbot=None, dataset_getter=None, code_getter=None, explain_layer=None, explain_buttons=None):
+    def __init__(self, general_feedback=None, chatbot=None, getting_started=None, dataset_getter=None, code_getter=None, explain_layer=None, explain_buttons=None):
         super().__init__()
         self.chatbot = chatbot
         self.general_feedback = general_feedback
@@ -495,6 +499,7 @@ class FeedbackModule(QWidget):
         self.code_getter = code_getter
         self.explainer = explain_layer
         self.explain_buttons = explain_buttons
+        self.starter = getting_started
 
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -524,6 +529,10 @@ class FeedbackModule(QWidget):
         self.layout.addLayout(input_layout)
 
         # General feedback button
+        self.getting_started_button = QPushButton("Getting Started")
+        self.getting_started_button.clicked.connect(self.getting_started)
+        self.layout.addWidget(self.getting_started_button)
+
         self.feedback_button = QPushButton("Provide Feedback on Model")
         self.feedback_button.clicked.connect(self.provide_feedback)
         self.layout.addWidget(self.feedback_button)
@@ -539,6 +548,8 @@ class FeedbackModule(QWidget):
                 self.message_input.setDisabled(True)
                 self.send_button.setDisabled(True)
                 self.feedback_button.setDisabled(True)
+                self.getting_started_button.setDisabled(True)
+                
                 for button in self.explain_buttons:
                     button.setDisabled(True)
                 def finish():
@@ -547,6 +558,7 @@ class FeedbackModule(QWidget):
                     self.message_input.setDisabled(False)
                     self.send_button.setDisabled(False)
                     self.feedback_button.setDisabled(False)
+                    self.getting_started_button.setDisabled(False)
                     for button in self.explain_buttons:
                         button.setDisabled(False)
                 thread = threading.Thread(target=finish, daemon=True)
@@ -563,6 +575,8 @@ class FeedbackModule(QWidget):
             self.message_input.setDisabled(True)
             self.send_button.setDisabled(True)
             self.feedback_button.setDisabled(True)
+            self.getting_started_button.setDisabled(True)
+
             for button in self.explain_buttons:
                     button.setDisabled(True)
             def finish():
@@ -571,6 +585,7 @@ class FeedbackModule(QWidget):
                 self.message_input.setDisabled(False)
                 self.send_button.setDisabled(False)
                 self.feedback_button.setDisabled(False)
+                self.getting_started_button.setDisabled(False)
                 for button in self.explain_buttons:
                     button.setDisabled(False)
             thread = threading.Thread(target=finish, daemon=True)
@@ -587,21 +602,24 @@ class FeedbackModule(QWidget):
             self.message_input.setDisabled(True)
             self.send_button.setDisabled(True)
             self.feedback_button.setDisabled(True)
+            self.getting_started_button.setDisabled(True)
+
             for button in self.explain_buttons:
                     button.setDisabled(True)
             def finish():
-                response = self.general_feedback(self.dataset_getter(), self.code_getter())
+                response = self.starter(self.dataset_getter(), layers, activations)
                 self.chatbot_output.setText(self.chatbot_output.text() + f"Chatbot: {response}")
                 self.message_input.setDisabled(False)
                 self.send_button.setDisabled(False)
                 self.feedback_button.setDisabled(False)
+                self.getting_started_button.setDisabled(False)
                 for button in self.explain_buttons:
                     button.setDisabled(False)
             thread = threading.Thread(target=finish, daemon=True)
             thread.start()
         else:
             response = "No feedback function provided."
-            self.chatbot_output.setText(self.chatbot_output.text() + "Feedback:\n"+response)
+            self.chatbot_output.setText(self.chatbot_output.text() + response)
 
     # In the FeedbackModule class, update the explain_layer method:
 
@@ -614,6 +632,7 @@ class FeedbackModule(QWidget):
             self.message_input.setDisabled(True)
             self.send_button.setDisabled(True)
             self.feedback_button.setDisabled(True)
+            self.getting_started_button.setDisabled(True)
             for button in self.explain_buttons:
                     button.setDisabled(True)
             
@@ -630,6 +649,7 @@ class FeedbackModule(QWidget):
                 self.message_input.setDisabled(False)
                 self.send_button.setDisabled(False)
                 self.feedback_button.setDisabled(False)
+                self.getting_started_button.setDisabled(False)
                 
             thread = threading.Thread(target=finish, daemon=True)
             thread.start()

@@ -4,7 +4,6 @@ import torch
 from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from torchtext import datasets as tdatasets
 import gemini_gen
 
 def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int = 8) -> float:

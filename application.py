@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         separator.setFrameShadow(qtWidgets.QFrame.Shadow.Sunken)
         layout.addWidget(separator)
 
-        feedback_module = qtWidgets.FeedbackModule(gemini_gen.gemini_fb, gemini_gen.gemini_chatbot, 
+        feedback_module = qtWidgets.FeedbackModule(gemini_gen.gemini_fb, gemini_gen.gemini_chatbot, gemini_gen.getting_started,
                                                    self.code_editor.get_dataset, self.code_editor.get_json_data, 
                                                    gemini_gen.explain_layer, self.code_editor.get_explain_buttons())
         
