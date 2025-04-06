@@ -82,8 +82,6 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int =
         y_pred = net.forward(X_test)
     accuracy = 0
     for i in range (len(y_pred)):
-        print(torch.argmax(y_pred[i]))
-        print(y_test[i])
         if torch.argmax(y_pred[i]) == y_test[i]:
             accuracy += 1
     accuracy = accuracy / len(y_pred)
