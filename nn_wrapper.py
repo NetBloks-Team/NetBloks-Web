@@ -4,6 +4,7 @@ import torch
 from torch import nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+from torchtext import datasets as tdatasets
 import llm_output
 import gemini_gen
 
@@ -18,6 +19,15 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int =
     elif ds_name == "CIFAR 100":
         train_ds = datasets.CIFAR100(root='./data', train=True, transform=transforms.ToTensor(), download=True)
         test_ds = datasets.CIFAR100(root='./data', train=False, transform=transforms.ToTensor(), download=True)
+    elif ds_name == "KMNIST":
+        train_ds = datasets.KMNIST(root='./data', train=True, transform=transforms.ToTensor(), download=True)
+        test_ds = datasets.KMNIST(root='./data', train=False, transform=transforms.ToTensor(), download=True)
+    elif ds_name == "SVHN":
+        train_ds = datasets.SVHN(root='./data', split='train', transform=transforms.ToTensor(), download=True)
+        test_ds = datasets.SVHN(root='./data', split='test', transform=transforms.ToTensor(), download=True)
+    elif ds_name == "IMDB":
+        train_ds = tdatasets.IMDB(root='./data', split='train', transform=transforms.ToTensor())
+        test_ds = tdatasets.IMDB(root='./data', split='test', transform=transforms.ToTensor())
     else:
         raise ValueError(f"Unknown dataset: {ds_name}")
     printer(f"Training on {train_ds.data.shape[0]} data points.")
@@ -82,8 +92,6 @@ def run_model(ds_name: str, printer = None, nn_struct: str = None, epochs: int =
         y_pred = net.forward(X_test)
     accuracy = 0
     for i in range (len(y_pred)):
-        print(torch.argmax(y_pred[i]))
-        print(y_test[i])
         if torch.argmax(y_pred[i]) == y_test[i]:
             accuracy += 1
     accuracy = accuracy / len(y_pred)
