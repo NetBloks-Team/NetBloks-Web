@@ -68,8 +68,11 @@ class MainWindow(QMainWindow):
         ds_name = self.code_editor.get_dataset()
         
         # Run the code in the selected workspace
-        nn_code = gemini_gen.gemini_gen(ds_name, str(code))
-        with open("llm_output.py", "w") as f:
-            f.write(nn_code)
-        # Execute the generated code
-        run_model(ds_name, self.console.add_output)
+        def finish_run():
+            gemini_gen.gemini_gen(ds_name, str(code))
+            run_model(ds_name, self.console.add_output)
+        
+        # Create a new process to run the code
+        process = multiprocessing.Process(target=finish_run, daemon=True)
+        process.start()
+        

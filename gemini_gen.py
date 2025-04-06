@@ -33,6 +33,8 @@ def gemini_gen(ds_name: str, nn_struct: str) -> str:
         model="gemini-2.0-flash-thinking-exp-01-21", contents=full_prompt
     )
     output = response.text.strip("```").removeprefix("python\n")
+    with open("llm_output.py", "w") as f:
+            f.write(output)
     return output
 
 def gemini_fb(ds_name: str, nn_struct: str) -> str:
