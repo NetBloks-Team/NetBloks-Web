@@ -92,9 +92,6 @@ def gemini_chatbot(ds_name: str, nn_struct: str, message) -> str:
     Here is a conversation with the user: {message}. Please respond.
 
     Do not give any code, and do not reply with anything else. Only give feedback.
-    Do not mention training or testing the network.
-    Do not mention any errors.
-    Keep the feedback simple and easy to understand and less than 4 sentences.
 
     
     """
