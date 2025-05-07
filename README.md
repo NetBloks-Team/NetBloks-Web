@@ -11,3 +11,4 @@ Full feature set:
 </p>
 <br>
 Huge props to Max for designing a sweet-looking interface
+Huge props to Kevin for designing a sick PyTorch backend
