@@ -1,8 +1,7 @@
-import os
+import threading
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QPushButton, QScrollArea, QHBoxLayout
 import qtWidgets
 import gemini_gen
-import threading
 
 EPOCHS = 8
 
