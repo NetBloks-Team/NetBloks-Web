@@ -32,7 +32,7 @@ def gemini_gen(ds_name: str, nn_struct: str, error_msg:str = None) -> str:
     We are training the network on the {ds_name} dataset.
     Make sure the input size is correct for the dataset. (i.e. 1 channel for B/W images like MNIST, 3 channels for RGB images like CIFAR 10)
     """
-    if error_msg != None:
+    if error_msg is not None:
         full_prompt += f"\nThe following error was generated: {error_msg}\nPlease fix the code to remove this error."
         with open("llm_output.py", "r", encoding="utf-8") as f:
             full_prompt += f"\nThe previous code is:\n{f.read()}"
@@ -42,7 +42,7 @@ def gemini_gen(ds_name: str, nn_struct: str, error_msg:str = None) -> str:
     )
     output = response.text.strip("```").removeprefix("python\n")
     with open("llm_output.py", "w", encoding="utf-8") as f:
-            f.write(output)
+        f.write(output)
     return output
 
 def gemini_fb(ds_name: str, nn_struct: str) -> str:
