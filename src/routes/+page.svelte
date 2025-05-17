@@ -4,4 +4,9 @@
 </script>
 
 <p>You have clicked {count} times</p>
-<button on:click={() => count++}>Click me!</button>
+<button
+    on:click={() => {
+        count++;
+        console.log(count);
+    }}>Click me!</button
+>
