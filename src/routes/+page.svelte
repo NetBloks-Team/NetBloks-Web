@@ -1,5 +1,4 @@
-<script context="module" lang="ts">
-    // Placeholder for module script
+<script lang="ts">
     let count = $state(0);
 </script>
 
